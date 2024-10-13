@@ -1,0 +1,5 @@
+flask 
+pymongo 
+google-cloud-logging 
+gunicorn
+logging
