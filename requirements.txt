@@ -3,3 +3,4 @@ pymongo
 google-cloud-logging 
 gunicorn
 logging
+flask-swagger-ui

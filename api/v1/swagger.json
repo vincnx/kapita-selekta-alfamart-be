@@ -1,0 +1,196 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "TA Kapita Selekta API",
+    "version": "1.0.0",
+    "description": "API for TA Kapita Selekta",
+    "contact": {
+      "name": "Vincent Exelcio Susanto",
+      "email": "672022070@student.uksw.edu",
+      "url": "https://github.com/vincnx"
+    }
+  },
+  "basePath": "/v1",
+  "produces": ["application/json"],
+  "tags": [
+    {
+      "name": "Master Bank",
+      "description": "API endpoints for master bank"
+    }
+  ],
+  "paths": {
+    "/master-bank": {
+      "get": {
+        "tags": ["Master Bank"],
+        "description": "Get all master bank",
+        "summary": "Get all master bank",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/200"
+          },
+          "500": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Master Bank"],
+        "description": "Create new master bank",
+        "summary": "Create new master bank",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Body request",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "bankDesc": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/201"
+          },
+          "409": {
+            "$ref": "#/responses/409"
+          },
+          "422": {
+            "$ref": "#/responses/422"
+          },
+          "500": {
+            "$ref": "#/responses/500"
+          }
+        }
+      }
+    },
+    "/master-bank/{masterBankId}": {
+      "get": {
+        "tags": ["Master Bank"],
+        "description": "Get master bank by id",
+        "summary": "Get master bank by id",
+        "parameters": [
+          {
+            "name": "masterBankId",
+            "in": "path",
+            "description": "Master bank id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/200"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "500": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Master Bank"],
+        "description": "Update master bank by id",
+        "summary": "Update master bank by id",
+        "parameters": [
+          {
+            "name": "masterBankId",
+            "in": "path",
+            "description": "Master bank id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Body request",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "bankDesc": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/200"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "422": {
+            "$ref": "#/responses/422"
+          },
+          "500": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Master Bank"],
+        "description": "Delete master bank by id",
+        "summary": "Delete master bank by id",
+        "parameters": [
+          {
+            "name": "masterBankId",
+            "in": "path",
+            "description": "Master bank id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/204"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "500": {
+            "$ref": "#/responses/500"
+          }
+        }
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "description": "OK"
+    },
+    "201": {
+      "description": "Created"
+    },
+    "204": {
+      "description": "No Content"
+    },
+    "404": {
+      "description": "Not Found"
+    },
+    "409": {
+      "description": "Conflict"
+    },
+    "422": {
+      "description": "Missing required field"
+    },
+    "500": {
+      "description": "Internal Server Error"
+    }
+  }
+}
