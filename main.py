@@ -2,7 +2,7 @@ from werkzeug.exceptions import HTTPException
 from flask import Flask, jsonify
 from api.v1.swagger import swaggerui_blueprint, swagger_blueprint, swagger_url
 from api.v1.master_bank.routes import masterBankRoutes
-
+from api.v1.vendor.routes import vendorRoutes
 app = Flask(__name__)
 
 @app.route('/')
@@ -11,6 +11,9 @@ def index():
 
 # ENDPOINT /v1/master-bank/
 app.register_blueprint(masterBankRoutes)
+
+# ENDPOINT /v1/vendor/
+app.register_blueprint(vendorRoutes)
 
 # ENDPOINT /swagger
 app.register_blueprint(swaggerui_blueprint, url_prefix=swagger_url)

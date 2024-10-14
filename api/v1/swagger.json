@@ -1,5 +1,5 @@
 {
-  "swagger": "2.0",
+  "openapi": "3.0.0",
   "info": {
     "title": "TA Kapita Selekta API",
     "version": "1.0.0",
@@ -10,12 +10,19 @@
       "url": "https://github.com/vincnx"
     }
   },
-  "basePath": "/v1",
-  "produces": ["application/json"],
+  "servers": [
+    {
+      "url": "/v1"
+    }
+  ],
   "tags": [
     {
       "name": "Master Bank",
       "description": "API endpoints for master bank"
+    },
+    {
+      "name": "Vendor",
+      "description": "API endpoints for vendor"
     }
   ],
   "paths": {
@@ -26,10 +33,10 @@
         "summary": "Get all master bank",
         "responses": {
           "200": {
-            "$ref": "#/responses/200"
+            "$ref": "#/components/responses/200"
           },
           "500": {
-            "$ref": "#/responses/500"
+            "$ref": "#/components/responses/500"
           }
         }
       },
@@ -37,37 +44,28 @@
         "tags": ["Master Bank"],
         "description": "Create new master bank",
         "summary": "Create new master bank",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "description": "Body request",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "bankDesc": {
-                  "type": "string"
-                }
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MasterBankInput"
               }
             }
           }
-        ],
+        },
         "responses": {
           "201": {
-            "$ref": "#/responses/201"
+            "$ref": "#/components/responses/201"
           },
           "409": {
-            "$ref": "#/responses/409"
+            "$ref": "#/components/responses/409"
           },
           "422": {
-            "$ref": "#/responses/422"
+            "$ref": "#/components/responses/422"
           },
           "500": {
-            "$ref": "#/responses/500"
+            "$ref": "#/components/responses/500"
           }
         }
       }
@@ -83,18 +81,20 @@
             "in": "path",
             "description": "Master bank id",
             "required": true,
-            "type": "string"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/200"
+            "$ref": "#/components/responses/200"
           },
           "404": {
-            "$ref": "#/responses/404"
+            "$ref": "#/components/responses/404"
           },
           "500": {
-            "$ref": "#/responses/500"
+            "$ref": "#/components/responses/500"
           }
         }
       },
@@ -108,38 +108,33 @@
             "in": "path",
             "description": "Master bank id",
             "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "description": "Body request",
-            "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "bankDesc": {
-                  "type": "string"
-                }
-              }
+              "type": "string"
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MasterBankInput"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "$ref": "#/responses/200"
+            "$ref": "#/components/responses/200"
           },
           "404": {
-            "$ref": "#/responses/404"
+            "$ref": "#/components/responses/404"
           },
           "422": {
-            "$ref": "#/responses/422"
+            "$ref": "#/components/responses/422"
           },
           "500": {
-            "$ref": "#/responses/500"
+            "$ref": "#/components/responses/500"
           }
         }
       },
@@ -153,44 +148,333 @@
             "in": "path",
             "description": "Master bank id",
             "required": true,
-            "type": "string"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "204": {
-            "$ref": "#/responses/204"
+            "$ref": "#/components/responses/204"
           },
           "404": {
-            "$ref": "#/responses/404"
+            "$ref": "#/components/responses/404"
           },
           "500": {
-            "$ref": "#/responses/500"
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/vendor": {
+      "get": {
+        "tags": ["Vendor"],
+        "description": "Get All Vendor",
+        "summary": "Get All Vendor",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Vendor"],
+        "description": "Create New Vendor",
+        "summary": "Create New Vendor",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/201"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/vendor/{vendorId}": {
+      "get": {
+        "tags": ["Vendor"],
+        "description": "Get Vendor by Id",
+        "summary": "Get Vendor by Id",
+        "parameters": [
+          {
+            "name": "vendorId",
+            "in": "path",
+            "description": "Vendor id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Vendor"],
+        "description": "Update Vendor by Id",
+        "summary": "Update Vendor by Id",
+        "parameters": [
+          {
+            "name": "vendorId",
+            "in": "path",
+            "description": "Vendor id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Vendor"],
+        "description": "Delete Vendor by Id",
+        "summary": "Delete Vendor by Id",
+        "parameters": [
+          {
+            "name": "vendorId",
+            "in": "path",
+            "description": "Vendor id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/204"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         }
       }
     }
   },
-  "responses": {
-    "200": {
-      "description": "OK"
+  "components": {
+    "schemas": {
+      "MasterBankInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "bankDesc": {
+            "type": "string"
+          }
+        },
+        "required": ["name", "bankDesc"]
+      },
+      "VendorInput": {
+        "type": "object",
+        "properties": {
+          "vendorName": {
+            "type": "string"
+          },
+          "unitUsaha": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "province": {
+            "type": "string"
+          },
+          "noTelp": {
+            "type": "string"
+          },
+          "emailCompany": {
+            "type": "string",
+            "format": "email"
+          },
+          "website": {
+            "type": "string",
+            "format": "uri"
+          },
+          "noNPWP": {
+            "type": "string"
+          },
+          "branchOffice": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BranchOffice"
+            }
+          },
+          "pic": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PIC"
+            }
+          },
+          "accountBank": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountBank"
+            }
+          }
+        },
+        "required": [
+          "vendorName",
+          "unitUsaha",
+          "address",
+          "country",
+          "province",
+          "noTelp",
+          "emailCompany",
+          "noNPWP"
+        ]
+      },
+      "BranchOffice": {
+        "type": "object",
+        "properties": {
+          "branchName": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "noTelp": {
+            "type": "string"
+          },
+          "website": {
+            "type": "string",
+            "format": "uri"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": ["branchName", "address", "country", "noTelp", "email"]
+      },
+      "PIC": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "noTelp": {
+            "type": "string"
+          }
+        },
+        "required": ["username", "name", "email", "noTelp"]
+      },
+      "AccountBank": {
+        "type": "object",
+        "properties": {
+          "bankId": {
+            "type": "string"
+          },
+          "bankName": {
+            "type": "string"
+          },
+          "accountNumber": {
+            "type": "string"
+          },
+          "accountName": {
+            "type": "string"
+          }
+        },
+        "required": ["bankId", "bankName", "accountNumber", "accountName"]
+      }
     },
-    "201": {
-      "description": "Created"
-    },
-    "204": {
-      "description": "No Content"
-    },
-    "404": {
-      "description": "Not Found"
-    },
-    "409": {
-      "description": "Conflict"
-    },
-    "422": {
-      "description": "Missing required field"
-    },
-    "500": {
-      "description": "Internal Server Error"
+    "responses": {
+      "200": {
+        "description": "OK"
+      },
+      "201": {
+        "description": "Created"
+      },
+      "204": {
+        "description": "No Content"
+      },
+      "404": {
+        "description": "Not Found"
+      },
+      "409": {
+        "description": "Conflict"
+      },
+      "422": {
+        "description": "Unprocessable Entity"
+      },
+      "500": {
+        "description": "Internal Server Error"
+      }
     }
   }
 }
