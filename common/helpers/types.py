@@ -77,3 +77,26 @@ TypeVendorInput = TypedDict('TypeVendorInput', {
     'pic': List[TypePIC],
     'accountBank': List[TypeAccountBank]
 })
+
+TypeProductVendor = TypedDict('TypeProductVendor', {
+    'vendorId': ObjectId,
+    'vendorName': str
+})
+
+TypeProduct = TypedDict('TypeProduct', {
+    '_id': ObjectId,
+    'name': str,
+    'count': int,
+    'merk': str,
+    'condition': str,
+    'vendor': TypeProductVendor,
+    'setup': TypeSetup
+})
+
+TypeProductInput = TypedDict('TypeProductInput', {
+    'name': str,
+    'count': int,
+    'merk': str,
+    'condition': str,
+    'vendorId': str
+})

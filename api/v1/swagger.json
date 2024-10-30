@@ -23,6 +23,10 @@
     {
       "name": "Vendor",
       "description": "API endpoints for vendor"
+    },
+    {
+      "name": "Product",
+      "description": "API endpoints for product"
     }
   ],
   "paths": {
@@ -311,6 +315,152 @@
           }
         }
       }
+    },
+    "/product": {
+      "get": {
+        "tags": ["Product"],
+        "description": "Get All Product",
+        "summary": "Get All Product",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Product"],
+        "description": "Create New Product",
+        "summary": "Create New Product",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/201"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/product/{productId}": {
+      "get": {
+        "tags": ["Product"],
+        "description": "Get Product by Id",
+        "summary": "Get Product by Id",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "description": "Product id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Product"],
+        "description": "Update Product by Id",
+        "summary": "Update Product by Id",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "description": "Product id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Product"],
+        "description": "Delete Product by Id",
+        "summary": "Delete Product by Id",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "description": "Product Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/204"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -451,6 +601,26 @@
           }
         },
         "required": ["bankId", "bankName", "accountNumber", "accountName"]
+      },
+      "ProductInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "merk": {
+            "type": "string"
+          },
+          "condition": {
+            "type": "string"
+          },
+          "vendorId": {
+            "type": "string"
+          }
+        }
       }
     },
     "responses": {
