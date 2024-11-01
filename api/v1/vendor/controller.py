@@ -1,12 +1,15 @@
 from datetime import datetime, UTC
 from typing import Any
 from bson import ObjectId
+from marshmallow import ValidationError
+from api.v1.vendor.schemas import VendorDetailInputSchema
 from common.db import dbInstance
 from bson.errors import InvalidId
 from common.helpers.types import TypeVendor, TypeVendorInput
 from flask import abort
 
 vendorCollection = dbInstance.db['VMS VENDOR']
+vendorDetailInputSchema = VendorDetailInputSchema()
 
 def findAllVendor()->tuple[list[TypeVendor], int]:
     # get all vendor data
@@ -51,7 +54,12 @@ def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
         abort(409, 'Vendor Name Already Exists')
 
     # validate required field
-    vendorData = vaildateRequiredField(vendorInput)
+    try:
+        vendorData = vendorDetailInputSchema.load(vendorInput)
+    except ValidationError as e:
+        abort(422, str(e))
+    except Exception as e:
+        abort(500, str(e))
 
     # insert vendor data
     try:
