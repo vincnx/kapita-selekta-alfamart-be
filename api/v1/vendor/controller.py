@@ -19,10 +19,12 @@ def findAllVendor()->tuple[list[TypeVendor], int]:
     except Exception as e:
         abort(500, str(e))
     
-    return [
-        {**vendor, '_id': str(vendor['_id'])}
-        for vendor in allVendorData
-    ], 200
+    return {
+        'data' : [
+            {**vendor, '_id': str(vendor['_id'])}
+            for vendor in allVendorData
+        ]
+    }, 200
 
 def findVendorById(vendorId:str)->tuple[TypeVendor, int]:
     # check if vendor data exists
@@ -38,7 +40,9 @@ def findVendorById(vendorId:str)->tuple[TypeVendor, int]:
     if not vendorData:
         abort(404, 'Vendor Data Not Found')
 
-    return {**vendorData, '_id': str(vendorData['_id'])}, 200
+    return {
+        'data': {**vendorData, '_id': str(vendorData['_id'])}
+    }, 200
 
 def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
     # check if vendor name already exists
@@ -57,7 +61,7 @@ def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
     
     return {**vendorData, '_id': str(response.inserted_id)}, 201
 
-def updateVendor(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
+def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
     # check if vendor data exists
     try:
         vendorData = validateUniqueField('_id', ObjectId(vendorId))
@@ -72,7 +76,7 @@ def updateVendor(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVendor, i
         abort(409, 'Vendor Name Already Exists')
 
     # validate required field
-    vendorData = vaildateRequiredField({**vendorInput, 'setup': vendorData['setup']}) # TODO: change to user data
+    vendorData = vaildateRequiredField({**vendorInput, 'branchOffice':vendorData['branchOffice'], 'pic': vendorData['pic'], 'accountBank': vendorData['accountBank'], 'setup': vendorData['setup']}) # TODO: change to user data
 
     # update vendor data
     try:

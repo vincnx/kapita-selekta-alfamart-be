@@ -193,7 +193,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/VendorInput"
+                "$ref": "#/components/schemas/VendorDetailInput"
               }
             }
           }
@@ -245,46 +245,6 @@
           }
         }
       },
-      "put": {
-        "tags": ["Vendor"],
-        "description": "Update Vendor by Id",
-        "summary": "Update Vendor by Id",
-        "parameters": [
-          {
-            "name": "vendorId",
-            "in": "path",
-            "description": "Vendor id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VendorInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/200"
-          },
-          "404": {
-            "$ref": "#/components/responses/404"
-          },
-          "422": {
-            "$ref": "#/components/responses/422"
-          },
-          "500": {
-            "$ref": "#/components/responses/500"
-          }
-        }
-      },
       "delete": {
         "tags": ["Vendor"],
         "description": "Delete Vendor by Id",
@@ -303,6 +263,48 @@
         "responses": {
           "204": {
             "$ref": "#/components/responses/204"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/vendor/{vendorId}/detail": {
+      "put": {
+        "tags": ["Vendor"],
+        "description": "Update Vendor detail by Id",
+        "summary": "Update Vendor detail by Id",
+        "parameters": [
+          {
+            "name": "vendorId",
+            "in": "path",
+            "description": "Vendor id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorDetailInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
           },
           "404": {
             "$ref": "#/components/responses/404"
@@ -477,7 +479,7 @@
         },
         "required": ["name", "bankDesc"]
       },
-      "VendorInput": {
+      "VendorDetailInput": {
         "type": "object",
         "properties": {
           "vendorName": {
@@ -508,24 +510,6 @@
           },
           "noNPWP": {
             "type": "string"
-          },
-          "branchOffice": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BranchOffice"
-            }
-          },
-          "pic": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PIC"
-            }
-          },
-          "accountBank": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AccountBank"
-            }
           }
         },
         "required": [
