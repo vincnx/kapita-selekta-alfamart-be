@@ -1,15 +1,13 @@
 from datetime import datetime, UTC
 from typing import Any
 from bson import ObjectId
-from marshmallow import ValidationError
-from api.v1.vendor.schemas import VendorDetailInputSchema
 from common.db import dbInstance
 from bson.errors import InvalidId
 from common.helpers.types import TypeVendor, TypeVendorInput
 from flask import abort
+from pymongo.errors import WriteError
 
 vendorCollection = dbInstance.db['VMS VENDOR']
-vendorDetailInputSchema = VendorDetailInputSchema()
 
 def findAllVendor()->tuple[list[TypeVendor], int]:
     # get all vendor data
@@ -53,17 +51,28 @@ def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
     if anotherVendorData:
         abort(409, 'Vendor Name Already Exists')
 
-    # validate required field
-    try:
-        vendorData = vendorDetailInputSchema.load(vendorInput)
-    except ValidationError as e:
-        abort(422, str(e))
-    except Exception as e:
-        abort(500, str(e))
+    vendorData = {
+        **vendorInput,
+        'accountBank': [],
+        'activeStatus': [],
+        'branchOffice': [],
+        'pic': [],
+        'activeStatus': True,
+        'setup': {
+            'createDate' : datetime.now(UTC),
+            'updateDate': datetime.now(UTC),
+            # TODO: change to user data
+            'createUser': 'SYSTEM',
+            'updateUser': 'SYSTEM'
+        }
+    }
 
     # insert vendor data
     try:
         response = vendorCollection.insert_one(vendorData)
+    except WriteError as e:
+        error_message = e.details.get('errmsg', str(e))
+        abort(422, error_message)
     except Exception as e:
         abort(500, str(e))
     
@@ -83,8 +92,18 @@ def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVen
     if anotherVendorData:
         abort(409, 'Vendor Name Already Exists')
 
-    # validate required field
-    vendorData = vaildateRequiredField({**vendorInput, 'branchOffice':vendorData['branchOffice'], 'pic': vendorData['pic'], 'accountBank': vendorData['accountBank'], 'setup': vendorData['setup']}) # TODO: change to user data
+    vendorData = {
+        **vendorInput,
+        'branchOffice': vendorData['branchOffice'],
+        'pic': vendorData['pic'],
+        'accountBank': vendorData['accountBank'],
+        'setup': {
+            **vendorData['setup'],
+            'updateDate': datetime.now(UTC),
+            # TODO: change to user data
+            'updateUser': 'SYSTEM'
+        }
+    }
 
     # update vendor data
     try:
@@ -93,6 +112,9 @@ def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVen
         }, {
             '$set': vendorData
         }, return_document=True)
+    except WriteError as e:
+        error_message = e.details.get('errmsg', str(e))
+        abort(422, error_message)
     except Exception as e:
         abort(500, str(e))
 
@@ -142,51 +164,3 @@ def validateUniqueField(fieldToValidate:str, valueToValidate:Any, excludeId:str 
         abort(500, str(e))
 
     return vendorData
-
-def vaildateRequiredField(vendorInput:TypeVendorInput)->dict:
-    try:
-        validatedRequiredField = {
-            'vendorName': vendorInput['vendorName'].lower(),
-            'unitUsaha': vendorInput['unitUsaha'],
-            'address': vendorInput['address'],
-            'country': vendorInput['country'],
-            'province': vendorInput['province'],
-            'noTelp': vendorInput['noTelp'],
-            'emailCompany': vendorInput['emailCompany'],
-            'website': vendorInput['website'],
-            'noNPWP': vendorInput['noNPWP'],
-            'activeStatus': True,
-            'branchOffice': [{
-                'branchName': branchOffice['branchName'],
-                'address': branchOffice['address'],
-                'country': branchOffice['country'],
-                'noTelp': branchOffice['noTelp'],
-                'website': branchOffice['website'],
-                'email': branchOffice['email']
-            } for branchOffice in vendorInput.get('branchOffice', [])],
-            'pic': [{
-                'username': pic['username'],
-                'name': pic['name'],
-                'email': pic['email'],
-                'noTelp': pic['noTelp']
-            } for pic in vendorInput.get('pic', [])],
-            'accountBank': [{
-                'bankId': accountBank['bankId'],
-                'bankName': accountBank['bankName'],
-                'accountNumber': accountBank['accountNumber'],
-                'accountName': accountBank['accountName']
-            } for accountBank in vendorInput.get('accountBank', [])],
-            'setup': {
-                'createDate': vendorInput.get('setup', {}).get('createDate', datetime.now(UTC)),
-                'updateDate': datetime.now(UTC),
-                # TODO: change to user data
-                'createUser': vendorInput.get('setup', {}).get('createUser', 'SYSTEM'),
-                'updateUser': 'SYSTEM'
-            }
-        }
-    except KeyError as e:
-        abort(422, f'Missing required field: {str(e)}')
-    except Exception as e:
-        abort(500, str(e))
-
-    return validatedRequiredField

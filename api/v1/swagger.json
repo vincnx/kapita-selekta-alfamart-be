@@ -498,7 +498,8 @@
             "type": "string"
           },
           "noTelp": {
-            "type": "string"
+            "type": "string",
+            "example": "08882345345"
           },
           "emailCompany": {
             "type": "string",
@@ -509,7 +510,8 @@
             "format": "uri"
           },
           "noNPWP": {
-            "type": "string"
+            "type": "string",
+            "example": "08882345345543534543"
           }
         },
         "required": [
