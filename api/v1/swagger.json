@@ -318,6 +318,48 @@
         }
       }
     },
+    "/vendor/{vendorId}/branch-office": {
+      "post": {
+        "tags": ["Vendor"],
+        "description": "Update Vendor Branch Office by Id",
+        "summary": "Update Vendor Branch Office by Id",
+        "parameters": [
+          {
+            "name": "vendorId",
+            "in": "path",
+            "description": "Vendor id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorBranchOfficeInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
     "/product": {
       "get": {
         "tags": ["Product"],
@@ -523,6 +565,40 @@
           "noTelp",
           "emailCompany",
           "noNPWP"
+        ]
+      },
+      "VendorBranchOfficeInput": {
+        "type": "object",
+        "properties": {
+          "branchName": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "noTelp": {
+            "type": "string",
+            "example": "08882345345"
+          },
+          "website": {
+            "type": "string",
+            "format": "uri"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": [
+          "branchName",
+          "address",
+          "country",
+          "noTelp",
+          "website",
+          "email"
         ]
       },
       "BranchOffice": {

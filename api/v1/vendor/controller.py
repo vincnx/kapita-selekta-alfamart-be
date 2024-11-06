@@ -3,7 +3,7 @@ from typing import Any
 from bson import ObjectId
 from common.db import dbInstance
 from bson.errors import InvalidId
-from common.helpers.types import TypeVendor, TypeVendorInput
+from common.helpers.types import TypeVendor, TypeVendorBranchOfficeInput, TypeVendorInput
 from flask import abort
 from pymongo.errors import WriteError
 
@@ -77,6 +77,42 @@ def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
         abort(500, str(e))
     
     return {**vendorData, '_id': str(response.inserted_id)}, 201
+
+def insertVendorBranchOffice(vendorId:str, vendorBranchOfficeInput:TypeVendorBranchOfficeInput)->tuple[TypeVendor, int]:
+    # check if vendor data exists
+    try:
+        vendorData = validateUniqueField('_id', ObjectId(vendorId))
+    except InvalidId:
+        abort(422, 'Invalid Vendor ID')
+    if not vendorData:
+        abort(404, 'Vendor Data Not Found')
+
+    vendorData = {
+        **vendorData,
+        'setup': {
+            **vendorData['setup'],
+            'updateDate': datetime.now(UTC),
+            # TODO: change to user data
+            'updateUser': 'SYSTEM'
+        },
+        'branchOffice': vendorData['branchOffice'] + [vendorBranchOfficeInput]
+    }
+    print(vendorBranchOfficeInput)
+
+    # update vendor data
+    try:
+        vendorDataUpdated = vendorCollection.find_one_and_update({
+            '_id': ObjectId(vendorId)
+        }, {
+            '$set': vendorData
+        }, return_document=True)
+    except WriteError as e:
+        error_message = e.details.get('errmsg', str(e))
+        abort(422, error_message)
+    except Exception as e:
+        abort(500, str(e))
+
+    return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
 
 def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
     # check if vendor data exists

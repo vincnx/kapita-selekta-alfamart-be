@@ -78,6 +78,15 @@ TypeVendorInput = TypedDict('TypeVendorInput', {
     'accountBank': List[TypeAccountBank]
 })
 
+TypeVendorBranchOfficeInput = TypedDict('TypeVendorBranchOfficeInput', {
+    'branchName': str,
+    'address': str,
+    'country': str,
+    'noTelp': str,
+    'website': str,
+    'email': str
+})
+
 TypeProductVendor = TypedDict('TypeProductVendor', {
     'vendorId': ObjectId,
     'vendorName': str

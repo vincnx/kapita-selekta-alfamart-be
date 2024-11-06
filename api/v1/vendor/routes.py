@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 
-from api.v1.vendor.controller import findAllVendor, findVendorById, insertVendor, removeVendor, updateVendorDetail
+from api.v1.vendor.controller import findAllVendor, findVendorById, insertVendor, insertVendorBranchOffice, removeVendor, updateVendorDetail
 
 vendorRoutes = Blueprint('vendorRoutes', __name__, url_prefix='/v1/vendor')
 
@@ -17,6 +17,11 @@ def getVendorById(vendorId:str):
 @vendorRoutes.route('', methods=['POST'])
 def createVendor():
     data, status = insertVendor(request.json)
+    return jsonify(data), status
+
+@vendorRoutes.route('/<string:vendorId>/branch-office', methods=['POST'])
+def createVendorBranchOffice(vendorId:str):
+    data, status = insertVendorBranchOffice(vendorId, request.json)
     return jsonify(data), status
 
 @vendorRoutes.route('/<string:vendorId>/detail', methods=['PUT'])
