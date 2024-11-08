@@ -93,6 +93,12 @@ TypeVendorPicInput = TypedDict('TypeVendorPicInput', {
     'noTelp': str
 })
 
+TypeVendorBankInput = TypedDict('TypeVendorBankInput', {
+    'bankId': str,
+    'accountName': str,
+    'accountNumber': str,
+})
+
 TypeProductVendor = TypedDict('TypeProductVendor', {
     'vendorId': ObjectId,
     'vendorName': str

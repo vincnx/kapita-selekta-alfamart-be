@@ -402,6 +402,48 @@
         }
       }
     },
+    "/vendor/{vendorId}/bank-account": {
+      "post": {
+        "tags": ["Vendor"],
+        "description": "Create Vendor Bank Account by Id",
+        "summary": "Create Vendor Bank Account by Id",
+        "parameters": [
+          {
+            "name": "vendorId",
+            "in": "path",
+            "description": "vendor id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorBankAccountInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
     "/product": {
       "get": {
         "tags": ["Product"],
@@ -656,6 +698,23 @@
           "email": {
             "type": "string",
             "format": "email"
+          }
+        },
+        "required": ["name", "noTelp", "email"]
+      },
+      "VendorBankAccountInput": {
+        "type": "object",
+        "properties": {
+          "bankId": {
+            "type": "string",
+            "example": "670b1e82d3391522cc3dc538"
+          },
+          "accountName": {
+            "type": "string"
+          },
+          "accountNumber": {
+            "type": "string",
+            "example": "08882345345"
           }
         },
         "required": ["name", "noTelp", "email"]
