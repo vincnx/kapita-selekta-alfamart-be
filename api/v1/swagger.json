@@ -776,10 +776,12 @@
             "type": "string"
           },
           "condition": {
-            "type": "string"
+            "type": "string",
+            "enum": ["new", "second"]
           },
           "vendorId": {
-            "type": "string"
+            "type": "string",
+            "example": "672b8b35eb845da3a5bdec1e"
           }
         }
       }

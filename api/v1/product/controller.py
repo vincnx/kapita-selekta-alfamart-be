@@ -6,6 +6,7 @@ from common.db import dbInstance
 from common.helpers.types import TypeProduct, TypeProductInput
 from bson.errors import InvalidId
 import api.v1.vendor.controller as vendorController
+from pymongo.errors import WriteError
 
 productCollection = dbInstance.db['PRODUCT']
 
@@ -43,15 +44,26 @@ def insertProduct(productInput:TypeProductInput)->tuple[TypeProduct, int]:
     if anotherProductData:
         abort(409, 'Product Name Already Exists')
 
-    # validate required field
-    productData = validateRequiredField(productInput)
-
-    # fill vendor data to product data
-    productData['vendor']['vendorName'] = vendorController.findVendorById(productInput['vendorId'])[0]['vendorName']
-
-    # insert product data
+    productData = {
+        'vendor': {
+            'vendorName': vendorController.findVendorById(productInput['vendorId'])[0]['data']['vendorName'],
+            'vendorId': productInput.pop('vendorId')
+        },
+        **productInput,
+        'setup': {
+            'createDate' : datetime.now(UTC),
+            'updateDate': datetime.now(UTC),
+            # TODO: change to user data
+            'createUser': 'SYSTEM',
+            'updateUser': 'SYSTEM'
+        }
+    }
+    
     try:
         response = productCollection.insert_one(productData)
+    except WriteError as e:
+        error_message = e.details.get('errmsg', str(e))
+        abort(422, error_message)
     except Exception as e:
         abort(500, str(e))
     
