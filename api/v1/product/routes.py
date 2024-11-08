@@ -4,7 +4,7 @@ from api.v1.product.controller import findAllProduct, findProductById, insertPro
 
 productRoutes = Blueprint('ProductRoutes', __name__, url_prefix='/v1/product')
 
-@productRoutes.route('/', methods=['GET'])
+@productRoutes.route('', methods=['GET'])
 def getAllProduct():
     data, status = findAllProduct()
     return jsonify(data), status
@@ -14,7 +14,7 @@ def getProductById(productId:str):
     data, status = findProductById(productId)
     return jsonify(data), status
 
-@productRoutes.route('/', methods=['POST'])
+@productRoutes.route('', methods=['POST'])
 def createProduct():
     data, status = insertProduct(request.json)
     return jsonify(data), status

@@ -10,17 +10,18 @@ import api.v1.vendor.controller as vendorController
 productCollection = dbInstance.db['PRODUCT']
 
 def findAllProduct()->tuple[list[TypeProduct], int]:
-    # get all product data
     try:
         allProductData = list(productCollection.find())
     except Exception as e:
         abort(500, str(e))
 
-    return [
-        {**product, '_id': str(product['_id']), 'vendor': {**product['vendor'], 'vendorId': str(product['vendor']['vendorId'])}}
-        for product in allProductData
-    ], 200
-        
+    return {
+        'data': [
+            {**product, '_id': str(product['_id'])}
+            for product in allProductData
+        ]
+    }, 200
+
 def findProductById(productId:str)->tuple[TypeProduct, int]:
     # check if product data exists
     try:
