@@ -36,7 +36,9 @@ def findProductById(productId:str)->tuple[TypeProduct, int]:
     if not productData:
         abort(404, 'Product Data Not Found')
 
-    return {**productData, '_id': str(productData['_id']), 'vendor': {**productData['vendor'], 'vendorId': str(productData['vendor']['vendorId'])}}, 200
+    return {
+        'data': {**productData, '_id': str(productData['_id'])}
+    }, 200
 
 def insertProduct(productInput:TypeProductInput)->tuple[TypeProduct, int]:
     # check if product name already exists
@@ -58,7 +60,7 @@ def insertProduct(productInput:TypeProductInput)->tuple[TypeProduct, int]:
             'updateUser': 'SYSTEM'
         }
     }
-    
+
     try:
         response = productCollection.insert_one(productData)
     except WriteError as e:
@@ -71,27 +73,36 @@ def insertProduct(productInput:TypeProductInput)->tuple[TypeProduct, int]:
 
 def updateProduct(productId:str, productInput:TypeProductInput)->tuple[TypeProduct, int]:
     # check if product data exists
-    productData = findProductById(productId)
+    productData = findProductById(productId)[0]['data']
 
     # check if another product name already exists
     anotherProductData = validateUniqueField('name', productInput['name'], productId)
     if anotherProductData:
         abort(409, 'Product Name Already Exists')
 
-    # validate required field
-    productData = validateRequiredField({**productInput, 'setup': productData[0]['setup']})
-    print(productData)
+    productData = {
+        'vendor': {
+            'vendorName': vendorController.findVendorById(productInput['vendorId'])[0]['data']['vendorName'],
+            'vendorId': productInput.pop('vendorId')
+        },
+        **productInput,
+        'setup': {
+            **productData['setup'],
+            'updateDate': datetime.now(UTC),
+            # TODO: change to user data
+            'updateUser': 'SYSTEM'
+        }
+    }
 
-    # fill vendor data to product data
-    productData['vendor']['vendorName'] = vendorController.findVendorById(productInput['vendorId'])[0]['vendorName']
-
-    # update product data
     try:
         productDataUpdated = productCollection.find_one_and_update({
             '_id': ObjectId(productId)
         }, {
             '$set': productData
         }, return_document=True)
+    except WriteError as e:
+        error_message = e.details.get('errmsg', str(e))
+        abort(422, error_message)
     except Exception as e:
         abort(500, str(e))
 
