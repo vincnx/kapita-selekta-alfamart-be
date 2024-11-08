@@ -10,7 +10,7 @@ from pymongo.errors import WriteError
 
 vendorCollection = dbInstance.db['VMS VENDOR']
 
-def findAllVendor()->tuple[list[TypeVendor], int]:
+def findAllVendor() -> tuple[dict[str, TypeVendor], int]:
     # get all vendor data
     try:
         allVendorData = list(vendorCollection.find({
@@ -28,7 +28,7 @@ def findAllVendor()->tuple[list[TypeVendor], int]:
         ]
     }, 200
 
-def findVendorById(vendorId:str)->tuple[TypeVendor, int]:
+def findVendorById(vendorId: str) -> tuple[dict[str, TypeVendor], int]:
     # check if vendor data exists
     try:
         vendorData = vendorCollection.find_one({
