@@ -3,7 +3,7 @@ from typing import Any
 from bson import ObjectId
 from common.db import dbInstance
 from bson.errors import InvalidId
-from common.helpers.types import TypeVendor, TypeVendorBranchOfficeInput, TypeVendorInput
+from common.helpers.types import TypeVendor, TypeVendorBranchOfficeInput, TypeVendorInput, TypeVendorPicInput
 from flask import abort
 from pymongo.errors import WriteError
 
@@ -97,7 +97,6 @@ def insertVendorBranchOffice(vendorId:str, vendorBranchOfficeInput:TypeVendorBra
         },
         'branchOffice': vendorData['branchOffice'] + [vendorBranchOfficeInput]
     }
-    print(vendorBranchOfficeInput)
 
     # update vendor data
     try:
@@ -107,8 +106,43 @@ def insertVendorBranchOffice(vendorId:str, vendorBranchOfficeInput:TypeVendorBra
             '$set': vendorData
         }, return_document=True)
     except WriteError as e:
-        error_message = e.details.get('errmsg', str(e))
-        abort(422, error_message)
+        errorMessage = e.details.get('errmsg', str(e))
+        abort(422, errorMessage)
+    except Exception as e:
+        abort(500, str(e))
+
+    return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
+
+def insertVendorPic(vendorId:str, vendorPicInput:TypeVendorPicInput):
+    # check if vendor data exists
+    try:
+        vendorData = validateUniqueField('_id', ObjectId(vendorId))
+    except InvalidId:
+        abort(422, 'Invalid Vendor ID')
+    if not vendorData:
+        abort(404, 'Vendor Data Not Found')
+
+    vendorData = {
+        **vendorData,
+        'setup': {
+            **vendorData['setup'],
+            'updateDate': datetime.now(UTC),
+            # TODO: change to user data
+            'updateUser': 'SYSTEM'
+        },
+        'pic': vendorData['pic'] + [vendorPicInput]
+    }
+
+    # update vendor data
+    try:
+        vendorDataUpdated = vendorCollection.find_one_and_update({
+            '_id': ObjectId(vendorId)
+        }, {
+            '$set': vendorData
+        }, return_document=True)
+    except WriteError as e:
+        errorMessage = e.details.get('errmsg', str(e))
+        abort(422, errorMessage)
     except Exception as e:
         abort(500, str(e))
 

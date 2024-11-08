@@ -87,6 +87,12 @@ TypeVendorBranchOfficeInput = TypedDict('TypeVendorBranchOfficeInput', {
     'email': str
 })
 
+TypeVendorPicInput = TypedDict('TypeVendorPicInput', {
+    'name': str,
+    'email': str,
+    'noTelp': str
+})
+
 TypeProductVendor = TypedDict('TypeProductVendor', {
     'vendorId': ObjectId,
     'vendorName': str

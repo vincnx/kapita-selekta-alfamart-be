@@ -321,8 +321,8 @@
     "/vendor/{vendorId}/branch-office": {
       "post": {
         "tags": ["Vendor"],
-        "description": "Update Vendor Branch Office by Id",
-        "summary": "Update Vendor Branch Office by Id",
+        "description": "Create Vendor Branch Office by Id",
+        "summary": "Create Vendor Branch Office by Id",
         "parameters": [
           {
             "name": "vendorId",
@@ -340,6 +340,48 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/VendorBranchOfficeInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/vendor/{vendorId}/pic": {
+      "post": {
+        "tags": ["Vendor"],
+        "description": "Create Vendor PIC by Id",
+        "summary": "Create Vendor PIC by Id",
+        "parameters": [
+          {
+            "name": "vendorId",
+            "in": "path",
+            "description": "vendor id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorPicInput"
               }
             }
           }
@@ -601,6 +643,23 @@
           "email"
         ]
       },
+      "VendorPicInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "noTelp": {
+            "type": "string",
+            "example": "08882345345"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": ["name", "noTelp", "email"]
+      },
       "BranchOffice": {
         "type": "object",
         "properties": {
@@ -626,25 +685,6 @@
           }
         },
         "required": ["branchName", "address", "country", "noTelp", "email"]
-      },
-      "PIC": {
-        "type": "object",
-        "properties": {
-          "username": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "noTelp": {
-            "type": "string"
-          }
-        },
-        "required": ["username", "name", "email", "noTelp"]
       },
       "AccountBank": {
         "type": "object",
