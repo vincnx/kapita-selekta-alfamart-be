@@ -7,4 +7,4 @@ flask-swagger-ui
 bcrypt
 flask-session
 redis
-dotenv
+python-dotenv
