@@ -8,3 +8,4 @@ bcrypt
 flask-session
 redis
 python-dotenv
+flask-cors
