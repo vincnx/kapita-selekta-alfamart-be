@@ -1,13 +1,12 @@
-from pymongo import MongoClient
-
-from config import MONGODB_DB, MONGODB_URI
+from pymongo import MongoClient 
+from config import Config
 
 class Database:
     def __init__(self):
         try:
             self.db = {}
-            self.client = MongoClient(MONGODB_URI)
-            self.db = self.client[MONGODB_DB]
+            self.client = MongoClient(Config.MONGODB_URI)
+            self.db = self.client[Config.MONGODB_DB]
         except Exception as e:
             print(f'Error: Failed connect to database {e}')
 

@@ -1,17 +1,28 @@
+import redis
+from config import Config
 from werkzeug.exceptions import HTTPException
 from flask import Flask, jsonify
 from flask_cors import CORS
 from api.v1.swagger import swaggerui_blueprint, swagger_blueprint, swagger_url
+from api.v1.auth.routes import authRoutes
 from api.v1.master_bank.routes import masterBankRoutes
 from api.v1.vendor.routes import vendorRoutes
 from api.v1.product.routes import productRoutes
+from flask_session import Session
 
 app = Flask(__name__)
+
+app.config.from_object(Config)
+app.config['SESSION_REDIS'] = redis.from_url(Config.SESSION_REDIS)
+server_session = Session(app)
 CORS(app)
 
 @app.route('/')
 def index():
     return 'TA Kapita Selekta'
+
+# ENDPOINT /v1/auth/
+app.register_blueprint(authRoutes)
 
 # ENDPOINT /v1/master-bank/
 app.register_blueprint(masterBankRoutes)

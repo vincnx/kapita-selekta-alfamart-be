@@ -1,4 +1,4 @@
-from typing import TypedDict, List
+from typing import Literal, TypedDict, List
 from datetime import datetime
 from bson import ObjectId
 
@@ -120,4 +120,17 @@ TypeProductInput = TypedDict('TypeProductInput', {
     'merk': str,
     'condition': str,
     'vendorId': str
+})
+
+TypeUser = TypedDict('TypeUser', {
+    '_id': ObjectId,
+    'username': str,
+    'password': str,
+    'userRole': Literal['inventory', 'branch'],
+    'setup': TypeSetup
+})
+
+TypeAuthInput = TypedDict('TypeLoginInput', {
+    'username': str,
+    'password': str,
 })

@@ -4,3 +4,6 @@ google-cloud-logging
 gunicorn
 logging
 flask-swagger-ui
+bcrypt
+flask-session
+redis
