@@ -15,7 +15,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 app.config['SESSION_REDIS'] = redis.from_url(Config.SESSION_REDIS)
 server_session = Session(app)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 @app.route('/')
 def index():

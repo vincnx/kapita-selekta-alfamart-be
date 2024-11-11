@@ -34,6 +34,24 @@
     }
   ],
   "paths": {
+    "/auth/user": {
+      "get": {
+        "tags": ["Auth"],
+        "description": "Get Current User",
+        "summary": "Get Current User",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
     "/auth/register": {
       "post": {
         "tags": ["Auth"],
@@ -84,11 +102,23 @@
           "200": {
             "$ref": "#/components/responses/200"
           },
-          "404": {
-            "$ref": "#/components/responses/404"
-          },
           "422": {
             "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "description": "Logout User",
+        "summary": "Logout User",
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/204"
           },
           "500": {
             "$ref": "#/components/responses/500"

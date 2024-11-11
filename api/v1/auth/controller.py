@@ -9,6 +9,14 @@ from flask import abort, session
 userCollection = dbInstance.db['USER']
 redisConnection = redis.Redis(host='localhost', port=6379, db=0)
 
+def userLoggedIn():
+    userData = session.get('user')
+    if not userData:
+        abort(401, 'Unauthorized')
+    return {
+        'data': userData
+    }, 200
+
 def userRegister(regsiterInput: TypeAuthInput):
     try:
         anotherUserData: TypeUser = userCollection.find_one({
@@ -71,6 +79,7 @@ def userLogin(loginInput: TypeAuthInput):
 
 def userLogout():
     session.clear()
+    return None, 204
 
 
 
