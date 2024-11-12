@@ -31,6 +31,10 @@
     {
       "name": "Auth",
       "description": "API endpoints for auth service"
+    },
+    {
+      "name": "Request",
+      "description": "API endpoints for request"
     }
   ],
   "paths": {
@@ -685,6 +689,108 @@
           }
         }
       }
+    },
+    "/request": {
+      "get": {
+        "tags": ["Request"],
+        "description": "Get All Request",
+        "summary": "Get All Request",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Request"],
+        "description": "Create New Request",
+        "summary": "Create New Request",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/201"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/request/{requestId}": {
+      "get": {
+        "tags": ["Request"],
+        "description": "Get request bank by id",
+        "summary": "Get request bank by id",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "description": "request id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/request/{requestId}/accept": {
+      "post": {
+        "tags": ["Request"],
+        "description": "Accept request",
+        "summary": "Accept request",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "description": "request id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -889,6 +995,31 @@
           "vendorId": {
             "type": "string",
             "example": "672b8b35eb845da3a5bdec1e"
+          }
+        }
+      },
+      "RequestInput": {
+        "type": "object",
+        "properties": {
+          "product": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productId": {
+                  "type": "string",
+                  "example": "670d090ed7758c7c0b8dfc7f"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": ["productId", "name", "quantity"]
+            }
           }
         }
       }

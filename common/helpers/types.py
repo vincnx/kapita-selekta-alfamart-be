@@ -148,3 +148,7 @@ TypeRequest = TypedDict('TypeRequest', {
     'totalProduct': int,
     'setup': TypeSetup,
 })
+
+TypeRequestInput = TypedDict('TypeRequestInput', {
+    'product': List[TypeRequestProduct],
+})
