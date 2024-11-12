@@ -11,10 +11,19 @@ from pymongo.errors import WriteError
 requestCollection = dbInstance.db['REQUEST']
 
 def findAllRequest() -> tuple[dict[str, List[TypeRequest]], int]:
-    try:
-        allRequestData = list(requestCollection.find())
-    except Exception as e:
-        abort(500, str(e))
+    userData = g.user
+    if userData['userRole'] == 'inventory':
+        try:
+            allRequestData = list(requestCollection.find())
+        except Exception as e:
+            abort(500, str(e))
+    elif userData['userRole'] == 'branch':
+        try:
+            allRequestData = list(requestCollection.find({
+                'branch.branchId': userData['branch']['branchId']
+            }))
+        except Exception as e:
+            abort(500, str(e))
 
     return {
         'data': [
