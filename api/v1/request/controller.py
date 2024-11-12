@@ -75,7 +75,7 @@ def insertRequest(requestInput: TypeRequestInput) -> tuple[dict[str, TypeRequest
         'data': {**requestData, '_id': str(response.inserted_id)}
     }, 201
 
-@verifyRole(['branch'])
+@verifyRole(['inventory'])
 def acceptRequest(requestId: str):
     # check if request data exists
     requestData = findRequestById(requestId)[0]['data']
