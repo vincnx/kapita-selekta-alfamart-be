@@ -134,3 +134,17 @@ TypeAuthInput = TypedDict('TypeLoginInput', {
     'username': str,
     'password': str,
 })
+
+TypeRequestProduct = TypedDict('TypeRequestProduct', {
+    'productId': str,
+    'name': str,
+    'quantity': int
+})
+
+TypeRequest = TypedDict('TypeRequest', {
+    '_id': ObjectId,
+    'status': Literal['on request', 'accepted', 'draft'],
+    'product': List[TypeRequestProduct],
+    'totalProduct': int,
+    'setup': TypeSetup,
+})

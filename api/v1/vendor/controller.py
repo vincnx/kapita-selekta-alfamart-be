@@ -2,6 +2,7 @@ from datetime import datetime, UTC
 from typing import Any
 from bson import ObjectId
 from api.v1.master_bank.controller import findMasterBankById
+from api.v1.middlewares.verifyRole import verifyRole
 from common.db import dbInstance
 from bson.errors import InvalidId
 from common.helpers.types import TypeVendor, TypeVendorBankInput, TypeVendorBranchOfficeInput, TypeVendorInput, TypeVendorPicInput
@@ -114,6 +115,7 @@ def insertVendorBranchOffice(vendorId:str, vendorBranchOfficeInput:TypeVendorBra
 
     return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
 
+@verifyRole(['inventory'])
 def insertVendorPic(vendorId:str, vendorPicInput:TypeVendorPicInput):
     # check if vendor data exists
     try:
@@ -149,6 +151,7 @@ def insertVendorPic(vendorId:str, vendorPicInput:TypeVendorPicInput):
 
     return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
 
+@verifyRole(['inventory'])
 def insertVendorBankAccount(vendorId:str, vendorBankAccountInput:TypeVendorBankInput)->tuple[TypeVendor, int]:
     # check if vendor data exists
     try:
@@ -190,6 +193,7 @@ def insertVendorBankAccount(vendorId:str, vendorBankAccountInput:TypeVendorBankI
 
     return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
 
+@verifyRole(['inventory'])
 def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
     # check if vendor data exists
     try:
@@ -232,6 +236,7 @@ def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVen
 
     return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
 
+@verifyRole(['inventory'])
 def removeVendor(vendorId:str)->tuple[None, int]:
     # check if vendor data exists
     try:

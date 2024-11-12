@@ -1,7 +1,7 @@
 import redis
 from config import Config
 from werkzeug.exceptions import HTTPException
-from flask import Flask, jsonify
+from flask import Flask, abort, g, jsonify, request, session
 from flask_cors import CORS
 from api.v1.swagger import swaggerui_blueprint, swagger_blueprint, swagger_url
 from api.v1.auth.routes import authRoutes
@@ -20,6 +20,21 @@ CORS(app, supports_credentials=True)
 @app.route('/')
 def index():
     return 'TA Kapita Selekta'
+
+@app.before_request
+def verifySession():
+    if request.endpoint and (
+        request.endpoint.startswith('swagger') or 
+        request.endpoint == 'index' or
+        request.endpoint.startswith('auth')
+    ):
+        return
+
+    userData = session.get('user')
+    if not userData:
+        abort(401, 'Unauthorized')
+
+    g.user = userData
 
 # ENDPOINT /v1/auth/
 app.register_blueprint(authRoutes)
