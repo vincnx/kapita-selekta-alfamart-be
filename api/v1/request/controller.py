@@ -44,6 +44,7 @@ def insertRequest(requestInput: TypeRequestInput) -> tuple[dict[str, TypeRequest
     requestData = {
         **requestInput,
         'status': 'on request',
+        'branch': g.user['branch'],
         'totalProduct': len(requestInput),
         'setup': {
             'createDate': datetime.now(UTC),

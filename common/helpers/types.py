@@ -1,4 +1,4 @@
-from typing import Literal, TypedDict, List
+from typing import Literal, NotRequired, TypedDict, List
 from datetime import datetime
 from bson import ObjectId
 
@@ -122,11 +122,17 @@ TypeProductInput = TypedDict('TypeProductInput', {
     'vendorId': str
 })
 
+TypeUserBranch = TypedDict('TypeUserBranch', {
+    'branchName': str,
+    'branchId': str,
+})
+
 TypeUser = TypedDict('TypeUser', {
     '_id': ObjectId,
     'username': str,
     'password': str,
     'userRole': Literal['inventory', 'branch'],
+    'branch' : NotRequired[TypeUserBranch],
     'setup': TypeSetup
 })
 
@@ -141,10 +147,16 @@ TypeRequestProduct = TypedDict('TypeRequestProduct', {
     'quantity': int
 })
 
+TypeRequestBranch = TypedDict('TypeRequestBranch', {
+    'branchName': str,
+    'branchId': str,
+})
+
 TypeRequest = TypedDict('TypeRequest', {
     '_id': ObjectId,
     'status': Literal['on request', 'accepted', 'draft'],
     'product': List[TypeRequestProduct],
+    'branch': TypeRequestBranch,
     'totalProduct': int,
     'setup': TypeSetup,
 })
