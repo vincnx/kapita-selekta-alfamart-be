@@ -3,7 +3,7 @@ from bson import ObjectId
 from flask import abort, g
 from api.v1.middlewares.verifyRole import verifyRole
 from common.db import dbInstance
-from common.helpers.types import TypeBranch
+from common.helpers.types import TypeBranch, TypeBranchProduct
 from bson.errors import InvalidId
 
 branchCollection = dbInstance.db['VMS BRANCH']
@@ -54,4 +54,23 @@ def findBranchByUser() -> tuple[dict[str, TypeBranch], int]:
 
     return {
         'data': {**branchData, '_id': str(branchData['_id'])}
+    }, 200
+
+@verifyRole(['branch'])
+def findAllBranchProductByUser() -> tuple[dict[str, List[TypeBranchProduct]], int]:
+    userData = g.user
+
+    try:
+        branchData = branchCollection.find_one({
+            '_id': ObjectId(userData['branch']['branchId'])
+        })
+    except InvalidId:
+        abort(422, 'Invalid Branch ID')
+    except Exception as e:
+        abort(500, str(e))
+    if not branchData:
+        abort(404, 'Branch Data Not Found')
+
+    return {
+        'data': {'product': branchData['product']}
     }, 200

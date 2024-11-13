@@ -857,6 +857,24 @@
           }
         }
       }
+    },
+    "/branch/user/product": {
+      "get": {
+        "tags": ["Branch"],
+        "description": "Get all branch product by user",
+        "summary": "Get all branch product by user",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
     }
   },
   "components": {
