@@ -839,6 +839,24 @@
           }
         }
       }
+    },
+    "/branch/user": {
+      "get": {
+        "tags": ["Branch"],
+        "description": "Get branch by user",
+        "summary": "Get branch by user",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
     }
   },
   "components": {
