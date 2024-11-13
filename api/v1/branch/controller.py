@@ -72,5 +72,5 @@ def findAllBranchProductByUser() -> tuple[dict[str, List[TypeBranchProduct]], in
         abort(404, 'Branch Data Not Found')
 
     return {
-        'data': {'product': branchData['product']}
+        'data': branchData['product']
     }, 200
