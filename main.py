@@ -9,6 +9,7 @@ from api.v1.master_bank.routes import masterBankRoutes
 from api.v1.vendor.routes import vendorRoutes
 from api.v1.product.routes import productRoutes
 from api.v1.request.routes import requestRoutes
+from api.v1.branch.routes import branchRoutes
 from flask_session import Session
 
 app = Flask(__name__)
@@ -51,6 +52,9 @@ app.register_blueprint(productRoutes)
 
 # ENDPOINT /v1/request/
 app.register_blueprint(requestRoutes)
+
+# ENDPOINT /v1/branch/
+app.register_blueprint(branchRoutes)
 
 # ENDPOINT /swagger
 app.register_blueprint(swaggerui_blueprint, url_prefix=swagger_url)

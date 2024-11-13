@@ -35,6 +35,10 @@
     {
       "name": "Request",
       "description": "API endpoints for request"
+    },
+    {
+      "name": "Branch",
+      "description": "API endpoints fro branch"
     }
   ],
   "paths": {
@@ -785,6 +789,21 @@
           },
           "404": {
             "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/branch": {
+      "get": {
+        "tags": ["Branch"],
+        "description": "Get all Branch",
+        "summary": "Get all Branch",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
           },
           "500": {
             "$ref": "#/components/responses/500"

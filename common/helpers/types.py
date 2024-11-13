@@ -164,3 +164,26 @@ TypeRequest = TypedDict('TypeRequest', {
 TypeRequestInput = TypedDict('TypeRequestInput', {
     'product': List[TypeRequestProduct],
 })
+
+TypeBranchProductVendor = TypedDict('TypeBranchProductVendor', {
+    'vendorId': str,
+    'vendorName': str
+})
+
+TypeBranchProduct = TypedDict('TypeBranchProduct', {
+    '_id': str,
+    'name': str,
+    'count': int,
+    'merk': str,
+    'condition': str,
+    'vendor': TypeBranchProductVendor,
+    'setup': TypeSetup
+})
+
+TypeBranch = TypedDict('TypeBranch', {
+    '_id': ObjectId,
+    'activeStatus': bool,
+    'setup': TypeSetup,
+    'branchName': str,
+    'product': TypeBranchProduct
+})
