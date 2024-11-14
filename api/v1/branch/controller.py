@@ -145,3 +145,40 @@ def insertBranchProductByUser(branchProductInput: TypeBranchProductInput) -> tup
         abort(500, str(e))
 
     return {**branchDataUpdated, '_id': str(branchDataUpdated['_id'])}, 200
+
+@verifyRole(['branch'])
+def updateBranchProductByIdAndUser(productId: str, branchProductInput: TypeBranchProductInput) -> tuple[dict[str, TypeBranchProduct], int]:
+    # check if product not exist
+    try:
+        branchData = branchCollection.find_one({
+            '_id': ObjectId(g.user['branch']['branchId']),
+            'product.productId': productId
+        })
+    except InvalidId:
+        abort(422, 'Invalid Product ID')
+    except Exception as e:
+        abort(500, str(e))
+    if not branchData:
+        abort(404, 'Product Not Found')
+
+    for product in branchData['product']:
+        if product['productId'] == productId:
+            product['count'] = branchProductInput['count']
+            product['setup']['updateDate'] = datetime.now(UTC)
+            product['setup']['updateUser'] = g.user['_id']
+
+    try:
+        branchDataUpdated = branchCollection.find_one_and_update({
+            '_id': ObjectId(g.user['branch']['branchId'])
+        }, {
+            '$set': branchData
+        }, return_document=True)
+    except WriteError as e:
+        errorMessage = e.details.get('errmsg', str(e))
+        abort(422, errorMessage)
+    except Exception as e:
+        abort(500, str(e))
+
+    for product in branchDataUpdated['product']:
+        if product['productId'] == productId:
+            return {'data': product}, 200
