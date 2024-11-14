@@ -85,7 +85,7 @@ def findBranchProductByIdAndUser(productId: str) -> tuple[dict[str, TypeBranchPr
     try:
         branchData = branchCollection.find_one({
             '_id': ObjectId(userData['branch']['branchId']),
-            'product._id': productId
+            'product.productId': productId
         }, 
         {'product.$': 1})
     except InvalidId:
