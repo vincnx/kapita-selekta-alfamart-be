@@ -875,6 +875,35 @@
           }
         }
       }
+    },
+    "/branch/user/product/{productId}": {
+      "get": {
+        "tags": ["Branch"],
+        "description": "Get branch product by user",
+        "summary": "Get branch product by user",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "description": "product id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
     }
   },
   "components": {

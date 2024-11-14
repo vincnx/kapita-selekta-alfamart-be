@@ -74,3 +74,25 @@ def findAllBranchProductByUser() -> tuple[dict[str, List[TypeBranchProduct]], in
     return {
         'data': branchData['product']
     }, 200
+
+@verifyRole(['branch'])
+def findBranchProductByIdAndUser(productId: str) -> tuple[dict[str, TypeBranchProduct], int]:
+    userData = g.user
+
+    try:
+        branchData = branchCollection.find_one({
+            '_id': ObjectId(userData['branch']['branchId']),
+            'product._id': productId
+        }, 
+        {'product.$': 1})
+    except InvalidId:
+        abort(422, 'Invalid Product ID')
+    except Exception as e:
+        abort(500, str(e))
+    
+    if not branchData or not branchData.get('product'):
+        abort(404, 'Product Not Found')
+
+    return {
+        'data': branchData['product'][0]
+    }, 200
