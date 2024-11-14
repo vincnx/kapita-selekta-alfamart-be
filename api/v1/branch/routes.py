@@ -1,6 +1,6 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
-from api.v1.branch.controller import findAllBranch, findAllBranchProductByUser, findBranchById, findBranchByUser, findBranchProductByIdAndUser
+from api.v1.branch.controller import findAllBranch, findAllBranchProductByUser, findBranchById, findBranchByUser, findBranchProductByIdAndUser, insertBranchProductByUser
 
 
 branchRoutes = Blueprint('branchRoutes', __name__, url_prefix='/v1/branch')
@@ -23,6 +23,11 @@ def getBranchByUser():
 @branchRoutes.route('/user/product', methods=['GET'])
 def getAllBranchProductByUser():
     data, status = findAllBranchProductByUser()
+    return jsonify(data), status
+
+@branchRoutes.route('/user/product', methods=['POST'])
+def createBranchProductByUser():
+    data, status = insertBranchProductByUser(request.json)
     return jsonify(data), status
 
 @branchRoutes.route('/user/product/<string:productId>', methods=['GET'])

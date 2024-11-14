@@ -874,6 +874,35 @@
             "$ref": "#/components/responses/500"
           }
         }
+      },
+      "post": {
+        "tags": ["Branch"],
+        "description": "Create Branch Product",
+        "summary": "Create Branch Product",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BranchProductInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
       }
     },
     "/branch/user/product/{productId}": {
@@ -1133,6 +1162,18 @@
               },
               "required": ["productId", "name", "quantity"]
             }
+          }
+        }
+      },
+      "BranchProductInput": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "default": "670d090ed7758c7c0b8dfc7f"
+          },
+          "count": {
+            "type": "integer"
           }
         }
       }

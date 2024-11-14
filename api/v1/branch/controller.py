@@ -1,10 +1,13 @@
+from datetime import datetime, UTC
 from typing import List
 from bson import ObjectId
 from flask import abort, g
 from api.v1.middlewares.verifyRole import verifyRole
+from api.v1.product.controller import findProductById
 from common.db import dbInstance
-from common.helpers.types import TypeBranch, TypeBranchProduct
+from common.helpers.types import TypeBranch, TypeBranchProduct, TypeBranchProductInput
 from bson.errors import InvalidId
+from pymongo.errors import WriteError
 
 branchCollection = dbInstance.db['VMS BRANCH']
 
@@ -96,3 +99,49 @@ def findBranchProductByIdAndUser(productId: str) -> tuple[dict[str, TypeBranchPr
     return {
         'data': branchData['product'][0]
     }, 200
+
+@verifyRole(['branch'])
+def insertBranchProductByUser(branchProductInput: TypeBranchProductInput) -> tuple[dict[str, TypeBranchProduct], int]:
+    branchData = findBranchByUser()[0]['data']
+    branchData.pop('_id')
+    
+    # check if product already exist
+    existing_product = branchCollection.find_one({
+        '_id': ObjectId(g.user['branch']['branchId']),
+        'product.productId': branchProductInput['productId']
+    })
+    if existing_product:
+        abort(422, 'Product already exists in this branch')
+
+    # get product data
+    productData = findProductById(branchProductInput['productId'])[0]['data']
+    productData['productId'] = productData['_id']
+    productData.pop('_id')
+
+    branchData = {
+        **branchData,
+        'product': branchData['product'] + [{
+            **productData,
+            'count': branchProductInput['count'],
+            'setup': {
+                'createDate': datetime.now(UTC),
+                'updateDate': datetime.now(UTC),
+                'createUser': g.user['_id'],
+                'updateUser': g.user['_id']
+            }
+        }]
+    }
+
+    try:
+        branchDataUpdated = branchCollection.find_one_and_update({
+            '_id': ObjectId(g.user['branch']['branchId'])
+        }, {
+            '$set': branchData
+        }, return_document=True)
+    except WriteError as e:
+        errorMessage = e.details.get('errmsg', str(e))
+        abort(422, errorMessage)
+    except Exception as e:
+        abort(500, str(e))
+
+    return {**branchDataUpdated, '_id': str(branchDataUpdated['_id'])}, 200

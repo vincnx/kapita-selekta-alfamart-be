@@ -171,7 +171,7 @@ TypeBranchProductVendor = TypedDict('TypeBranchProductVendor', {
 })
 
 TypeBranchProduct = TypedDict('TypeBranchProduct', {
-    '_id': str,
+    'productId': str,
     'name': str,
     'count': int,
     'merk': str,
@@ -186,4 +186,9 @@ TypeBranch = TypedDict('TypeBranch', {
     'setup': TypeSetup,
     'branchName': str,
     'product': TypeBranchProduct
+})
+
+TypeBranchProductInput = TypedDict('TypeBranchProductInput', {
+    'productId': str,
+    'count': int
 })
