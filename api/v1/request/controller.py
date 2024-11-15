@@ -51,7 +51,6 @@ def findRequestById(requestId: str) -> tuple[dict[str, TypeRequest], int]:
 
 @verifyRole(['branch'])
 def insertRequest(requestInput: TypeRequestInput) -> tuple[dict[str, TypeRequest], int]:
-    
     requestInputProductId = [ObjectId(product['productId']) for product in requestInput['product']]
     
     try:
@@ -66,7 +65,12 @@ def insertRequest(requestInput: TypeRequestInput) -> tuple[dict[str, TypeRequest
     
     productData = [{
         'productId': str(product['_id']),
-        'name': product['name']
+        'name': product['name'],
+        'quantity': next(
+            input_product['quantity'] 
+            for input_product in requestInput['product'] 
+            if str(product['_id']) == input_product['productId']
+        )
     } for product in productData]
 
     requestData = {
