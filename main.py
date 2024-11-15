@@ -25,6 +25,9 @@ def index():
 
 @app.before_request
 def verifySession():
+    if request.method == 'OPTIONS':
+        return
+
     if request.endpoint and (
         request.endpoint.startswith('swagger') or 
         request.endpoint == 'index' or

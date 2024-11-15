@@ -9,6 +9,7 @@ from bson.errors import InvalidId
 from pymongo.errors import WriteError
 
 requestCollection = dbInstance.db['REQUEST']
+productCollection = dbInstance.db['PRODUCT']
 
 def findAllRequest() -> tuple[dict[str, List[TypeRequest]], int]:
     userData = g.user
@@ -50,11 +51,29 @@ def findRequestById(requestId: str) -> tuple[dict[str, TypeRequest], int]:
 
 @verifyRole(['branch'])
 def insertRequest(requestInput: TypeRequestInput) -> tuple[dict[str, TypeRequest], int]:
+    
+    requestInputProductId = [ObjectId(product['productId']) for product in requestInput['product']]
+    
+    try:
+        # validate data with BE
+        productData = list(productCollection.find({
+            '_id': {'$in': requestInputProductId}
+        }, {'_id': 1, 'name': 1}))
+    except InvalidId:
+        abort(422, 'Invalid ProductId')
+    except Exception as e:
+        abort(500, str(e))
+    
+    productData = [{
+        'productId': str(product['_id']),
+        'name': product['name']
+    } for product in productData]
+
     requestData = {
-        **requestInput,
+        'product': productData,
         'status': 'on request',
         'branch': g.user['branch'],
-        'totalProduct': len(requestInput),
+        'totalProduct': len(productData),
         'setup': {
             'createDate': datetime.now(UTC),
             'updateDate': datetime.now(UTC),
