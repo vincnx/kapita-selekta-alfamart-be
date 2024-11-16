@@ -8,16 +8,17 @@ from flask import abort
 masterBankCollection = dbInstance.db['VMS BANK']
 
 def findAllMasterBank()->tuple[list[TypeMasterBank], int]:
-    # get all master bank data
     try:
         allMasterBankData = list(masterBankCollection.find({'activeStatus': True}))
     except Exception as e:
         abort(500, str(e))
     
-    return [
-        {**masterBank, '_id': str(masterBank['_id'])}
-        for masterBank in allMasterBankData
-    ], 200
+    return {
+        'data': [
+            {**masterBank, '_id': str(masterBank['_id'])}
+            for masterBank in allMasterBankData
+        ]
+    }, 200
 
 def findMasterBankById(masterBankId:str)->tuple[TypeMasterBank, int]:
     # check if master bank data exists
