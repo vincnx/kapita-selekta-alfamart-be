@@ -1,5 +1,5 @@
 from datetime import datetime, UTC
-from typing import Any
+from typing import Any, List
 from bson import ObjectId
 from flask import abort
 from common.db import dbInstance
@@ -38,6 +38,26 @@ def findProductById(productId:str)->tuple[TypeProduct, int]:
 
     return {
         'data': {**productData, '_id': str(productData['_id'])}
+    }, 200
+
+def findProductsByIds(productIds: List[str]) -> tuple[list[TypeProduct], int]:
+    try:
+        objectIds = [ObjectId(productId) for productId in productIds]
+    except InvalidId:
+        abort(422, 'Invalid ProductId')
+        
+    try:
+        products = list(productCollection.find({
+            '_id': {'$in': objectIds}
+        }))
+    except Exception as e:
+        abort(500, str(e))
+
+    return {
+        'data': [
+            {**product, '_id': str(product['_id'])}
+            for product in products
+        ]
     }, 200
 
 def insertProduct(productInput:TypeProductInput)->tuple[TypeProduct, int]:
