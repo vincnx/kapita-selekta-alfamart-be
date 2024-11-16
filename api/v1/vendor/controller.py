@@ -27,22 +27,23 @@ def findAllVendor() -> tuple[dict[str, TypeVendor], int]:
         abort(500, str(e))
 
 def findVendorById(vendorId: str) -> tuple[dict[str, TypeVendor], int]:
-    # check if vendor data exists
     try:
         vendorData = vendorCollection.find_one({
             '_id': ObjectId(vendorId),
             'activeStatus': True
         })
+        if not vendorData:
+            return {
+                'message': 'Vendor Data Not Found'
+            }, 404
+
+        return {
+            'data': {**vendorData, '_id': str(vendorData['_id'])}
+        }, 200
     except InvalidId:
         abort(422, 'Invalid Vendor ID')
     except Exception as e:
         abort(500, str(e))
-    if not vendorData:
-        abort(404, 'Vendor Data Not Found')
-
-    return {
-        'data': {**vendorData, '_id': str(vendorData['_id'])}
-    }, 200
 
 def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
     # check if vendor name already exists
