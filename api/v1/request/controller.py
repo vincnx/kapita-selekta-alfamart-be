@@ -14,26 +14,30 @@ productCollection = dbInstance.db['PRODUCT']
 branchCollection = dbInstance.db['VMS BRANCH']
 
 def findAllRequest() -> tuple[dict[str, List[TypeRequest]], int]:
-    userData = g.user
-    if userData['userRole'] == 'inventory':
-        try:
-            allRequestData = list(requestCollection.find())
-        except Exception as e:
-            abort(500, str(e))
-    elif userData['userRole'] == 'branch':
-        try:
+    try:
+        userData = g.user
+        if userData['userRole'] == 'inventory':
+            allRequestData = list(requestCollection.find().sort([
+                ('status', -1),
+                ('setup.createDate', 1)
+            ]))
+
+        elif userData['userRole'] == 'branch':
             allRequestData = list(requestCollection.find({
                 'branch.branchId': userData['branch']['branchId']
-            }))
-        except Exception as e:
-            abort(500, str(e))
+            }).sort([
+                ('status', -1),
+                ('setup.createDate', 1)
+            ]))
 
-    return {
-        'data': [
-            {**request, '_id': str(request['_id'])}
-            for request in allRequestData
-        ]
-    }, 200
+        return {
+            'data': [
+                {**request, '_id': str(request['_id'])}
+                for request in allRequestData
+            ]
+        }, 200
+    except Exception as e:
+        abort(500, str(e))
 
 def findRequestById(requestId: str) -> tuple[dict[str, TypeRequest], int]:
     try:
