@@ -6,7 +6,7 @@ from api.v1.middlewares.verifyRole import verifyRole
 from common.db import dbInstance
 from bson.errors import InvalidId
 from common.helpers.types import TypeVendor, TypeVendorBankInput, TypeVendorBranchOfficeInput, TypeVendorInput, TypeVendorPicInput
-from flask import abort
+from flask import abort, g
 from pymongo.errors import WriteError
 
 vendorCollection = dbInstance.db['VMS VENDOR']
@@ -46,33 +46,33 @@ def findVendorById(vendorId: str) -> tuple[dict[str, TypeVendor], int]:
         abort(500, str(e))
 
 def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
-    # check if vendor name already exists
-    anotherVendorData = validateUniqueField('vendorName', vendorInput['vendorName'].lower())
-    if anotherVendorData:
-        abort(409, 'Vendor Name Already Exists')
-
-    vendorData = {
-        **vendorInput,
-        'accountBank': [],
-        'activeStatus': [],
-        'branchOffice': [],
-        'pic': [],
-        'activeStatus': True,
-        'setup': {
-            'createDate' : datetime.now(UTC),
-            'updateDate': datetime.now(UTC),
-            # TODO: change to user data
-            'createUser': 'SYSTEM',
-            'updateUser': 'SYSTEM'
-        }
-    }
-
-    # insert vendor data
     try:
+        # check if vendor name already exists
+        anotherVendorData = validateUniqueField('vendorName', vendorInput['vendorName'].lower())
+        if anotherVendorData:
+            return {
+                'message': 'Vendor Name Already Exists'
+            }, 409
+
+        vendorData = {
+            **vendorInput,
+            'accountBank': [],
+            'activeStatus': [],
+            'branchOffice': [],
+            'pic': [],
+            'activeStatus': True,
+            'setup': {
+                'createDate' : datetime.now(UTC),
+                'updateDate': datetime.now(UTC),
+                'createUser': g.user['_id'],
+                'updateUser': g.user['_id']
+            }
+        }
+
         response = vendorCollection.insert_one(vendorData)
     except WriteError as e:
-        error_message = e.details.get('errmsg', str(e))
-        abort(422, error_message)
+        errorMessage = e.details.get('errmsg', str(e))
+        abort(422, errorMessage)
     except Exception as e:
         abort(500, str(e))
     
