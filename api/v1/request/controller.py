@@ -7,9 +7,11 @@ from common.db import dbInstance
 from common.helpers.types import TypeRequest, TypeRequestInput
 from bson.errors import InvalidId
 from pymongo.errors import WriteError
+from pymongo import UpdateOne
 
 requestCollection = dbInstance.db['REQUEST']
 productCollection = dbInstance.db['PRODUCT']
+branchCollection = dbInstance.db['VMS BRANCH']
 
 def findAllRequest() -> tuple[dict[str, List[TypeRequest]], int]:
     userData = g.user
@@ -99,32 +101,124 @@ def insertRequest(requestInput: TypeRequestInput) -> tuple[dict[str, TypeRequest
     }, 201
 
 @verifyRole(['inventory'])
-def acceptRequest(requestId: str):
-    # check if request data exists
-    requestData = findRequestById(requestId)[0]['data']
-    requestData.pop('_id')
-
-    requestData = {
-        **requestData, 
-        'status': 'accepted',
-        'setup': {
-            **requestData['setup'],
-            'updateDate': datetime.now(UTC),
-            'updateUser': g.user['_id']
-        }
-    }
-    print(requestData)
-
+def acceptRequest(requestId: str) -> tuple[dict, int]:
     try:
+        # get request data
+        requestData = findRequestById(requestId)[0]['data']
+        requestData.pop('_id')
+
+        # get products from product collection
+        productIds = [ObjectId(product['productId']) for product in requestData['product']]
+        inventoryProducts = {
+            str(product['_id']): product
+            for product in productCollection.find(
+                {'_id': {'$in': productIds}},
+                {
+                    '_id': 1, 
+                    'count': 1,
+                    'vendor': 1,
+                    'merk': 1,
+                    'condition': 1,
+                    'name': 1
+                }
+            )
+        }
+
+        # check if products stock is enough for request
+        for requestProduct in requestData['product']:
+            currentProduct = inventoryProducts.get(requestProduct['productId'])
+            if not currentProduct or currentProduct['count'] < requestProduct['quantity']:
+                return {
+                    'message': f'Insufficient quantity for product {requestProduct["name"]}'
+                }, 400
+
+        # Decrease main product inventory using bulk write
+        decreaseInventoryQueries = [
+            UpdateOne(
+                {'_id': ObjectId(requestProduct['productId'])},
+                {
+                    '$inc': {'count': -requestProduct['quantity']},
+                    '$set': {
+                        'setup.updateDate': datetime.now(UTC),
+                        'setup.updateUser': g.user['_id']
+                    }
+                }
+            ) for requestProduct in requestData['product']
+        ]
+        productCollection.bulk_write(decreaseInventoryQueries)
+
+        # check product in branch
+        branchId = ObjectId(requestData['branch']['branchId'])
+        branchProductIds = branchCollection.find_one({'_id': branchId}, {'_id': 0, 'product.productId': 1})
+        branchProductIds = [product['productId'] for product in branchProductIds['product']]
+        # filter product that already in branch
+        newProductIds = [product['productId'] for product in requestData['product'] if product['productId'] not in branchProductIds]
+
+        # insert new products to branch
+        createBranchProductQueries = [
+            UpdateOne(
+                {'_id': branchId},
+                {
+                    '$push': {
+                        'product': {
+                            'productId': newProductId,
+                            'name': inventoryProducts[newProductId]['name'],
+                            'count': next(
+                                request['quantity'] 
+                                for request in requestData['product'] 
+                                if request['productId'] == newProductId
+                            ),
+                            'vendor': inventoryProducts[newProductId]['vendor'],
+                            'merk': inventoryProducts[newProductId]['merk'],
+                            'condition': inventoryProducts[newProductId]['condition'],
+                            'setup': {
+                                'createDate': datetime.now(UTC),
+                                'updateDate': datetime.now(UTC),
+                                'createUser': g.user['_id'],
+                                'updateUser': g.user['_id']
+                            }
+                        }
+                    }
+                }
+            ) for newProductId in newProductIds
+        ]
+        if createBranchProductQueries:
+            branchCollection.bulk_write(createBranchProductQueries)
+
+        # update product in branch
+        updateBranchProductQueries = [
+            UpdateOne(
+                {'_id': branchId, 'product.productId': requestProduct['productId']},
+                {
+                    '$inc': {'product.$.count': requestProduct['quantity']},
+                    '$set': {
+                        'product.$.setup.updateDate': datetime.now(UTC),
+                        'product.$.setup.updateUser': g.user['_id']
+                    }
+                }
+            ) for requestProduct in requestData['product'] if requestProduct['productId'] not in newProductIds
+        ]
+        if updateBranchProductQueries:
+            branchCollection.bulk_write(updateBranchProductQueries)
+
+        # update request data
         requestAccepted = requestCollection.find_one_and_update({
             '_id': ObjectId(requestId)
         }, {
-            '$set': requestData
+            '$set': {
+                'status': 'accepted',
+                'setup.updateDate': datetime.now(UTC),
+                'setup.updateUser': g.user['_id']
+            }
         }, return_document=True)
-    except WriteError as e:
-        error_message = e.details.get('errmsg', str(e))
-        abort(422, error_message)
-    except Exception as e:
-        abort(500, str(e))
 
-    return {**requestAccepted, '_id': str(requestAccepted['_id'])}, 200
+        return {
+            'data': {**requestAccepted, '_id': str(requestAccepted['_id'])}
+        }, 200
+
+    except WriteError as e:
+        errorMessage = e.details.get('errmsg', str(e))
+        abort(422, errorMessage)
+    except Exception as e:
+        print(e)
+        abort(500, str(e))
