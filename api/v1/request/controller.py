@@ -19,7 +19,7 @@ def findAllRequest() -> tuple[dict[str, List[TypeRequest]], int]:
         if userData['userRole'] == 'inventory':
             allRequestData = list(requestCollection.find().sort([
                 ('status', -1),
-                ('setup.createDate', 1)
+                ('setup.createDate', -1)
             ]))
 
         elif userData['userRole'] == 'branch':
@@ -27,7 +27,7 @@ def findAllRequest() -> tuple[dict[str, List[TypeRequest]], int]:
                 'branch.branchId': userData['branch']['branchId']
             }).sort([
                 ('status', -1),
-                ('setup.createDate', 1)
+                ('setup.createDate', -1)
             ]))
 
         return {
@@ -45,7 +45,9 @@ def findRequestById(requestId: str) -> tuple[dict[str, TypeRequest], int]:
             '_id': ObjectId(requestId),
         })
         if not requestData:
-            abort(404, 'Request Data Not Found')
+            return {
+                'message': 'Request Data Not Found'
+            }, 404
 
         return {
             'data': {**requestData, '_id': str(requestData['_id'])}
@@ -57,52 +59,50 @@ def findRequestById(requestId: str) -> tuple[dict[str, TypeRequest], int]:
 
 @verifyRole(['branch'])
 def insertRequest(requestInput: TypeRequestInput) -> tuple[dict[str, TypeRequest], int]:
-    requestInputProductId = [ObjectId(product['productId']) for product in requestInput['product']]
-    
+    requestInputProductIds = [ObjectId(product['productId']) for product in requestInput['product']]
     try:
         # validate data with BE
         productData = list(productCollection.find({
-            '_id': {'$in': requestInputProductId}
+            '_id': {'$in': requestInputProductIds}
         }, {'_id': 1, 'name': 1}))
-    except InvalidId:
-        abort(422, 'Invalid ProductId')
-    except Exception as e:
-        abort(500, str(e))
-    
-    productData = [{
-        'productId': str(product['_id']),
-        'name': product['name'],
-        'quantity': next(
-            input_product['quantity'] 
-            for input_product in requestInput['product'] 
-            if str(product['_id']) == input_product['productId']
-        )
-    } for product in productData]
+        if len(productData) != len(requestInputProductIds):
+            return {
+                'message': 'One or more product not found'
+            }, 422
 
-    requestData = {
-        'product': productData,
-        'status': 'on request',
-        'branch': g.user['branch'],
-        'totalProduct': len(productData),
-        'setup': {
-            'createDate': datetime.now(UTC),
-            'updateDate': datetime.now(UTC),
-            'createUser': g.user['_id'],
-            'updateUser': g.user['_id']
+        productData = [{
+            'productId': str(product['_id']),
+            'name': product['name'],
+            'quantity': next(
+                input_product['quantity'] 
+                for input_product in requestInput['product'] 
+                if str(product['_id']) == input_product['productId']
+            )
+        } for product in productData]
+
+        requestData = {
+            'product': productData,
+            'status': 'on request',
+            'branch': g.user['branch'],
+            'totalProduct': len(productData),
+            'setup': {
+                'createDate': datetime.now(UTC),
+                'updateDate': datetime.now(UTC),
+                'createUser': g.user['_id'],
+                'updateUser': g.user['_id']
+            }
         }
-    }
-    
-    try:
+        
         response = requestCollection.insert_one(requestData)
+
+        return {
+            'data': {**requestData, '_id': str(response.inserted_id)}
+        }, 201
     except WriteError as e:
-        error_message = e.details.get('errmsg', str(e))
-        abort(422, error_message)
+        errorMessage = e.details.get('errmsg', str(e))
+        abort(422, errorMessage)
     except Exception as e:
         abort(500, str(e))
-
-    return {
-        'data': {**requestData, '_id': str(response.inserted_id)}
-    }, 201
 
 @verifyRole(['inventory'])
 def acceptRequest(requestId: str) -> tuple[dict, int]:
