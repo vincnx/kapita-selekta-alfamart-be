@@ -44,16 +44,16 @@ def findRequestById(requestId: str) -> tuple[dict[str, TypeRequest], int]:
         requestData = requestCollection.find_one({
             '_id': ObjectId(requestId),
         })
+        if not requestData:
+            abort(404, 'Request Data Not Found')
+
+        return {
+            'data': {**requestData, '_id': str(requestData['_id'])}
+        }, 200
     except InvalidId:
         abort(422, 'Invalid Request ID')
     except Exception as e:
         abort(500, str(e))
-    if not requestData:
-        abort(404, 'Request Data Not Found')
-
-    return {
-        'data': {**requestData, '_id': str(requestData['_id'])}
-    }, 200
 
 @verifyRole(['branch'])
 def insertRequest(requestInput: TypeRequestInput) -> tuple[dict[str, TypeRequest], int]:
