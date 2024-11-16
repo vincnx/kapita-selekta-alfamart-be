@@ -12,22 +12,19 @@ from pymongo.errors import WriteError
 vendorCollection = dbInstance.db['VMS VENDOR']
 
 def findAllVendor() -> tuple[dict[str, TypeVendor], int]:
-    # get all vendor data
     try:
         allVendorData = list(vendorCollection.find({
             'activeStatus': True
-        }, {
-            'setup': 0}
-        ))
+        }))
+    
+        return {
+            'data' : [
+                {**vendor, '_id': str(vendor['_id'])}
+                for vendor in allVendorData
+            ]
+        }, 200
     except Exception as e:
         abort(500, str(e))
-    
-    return {
-        'data' : [
-            {**vendor, '_id': str(vendor['_id'])}
-            for vendor in allVendorData
-        ]
-    }, 200
 
 def findVendorById(vendorId: str) -> tuple[dict[str, TypeVendor], int]:
     # check if vendor data exists
