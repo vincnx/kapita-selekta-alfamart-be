@@ -151,45 +151,43 @@ def insertVendorPic(vendorId:str, vendorPicInput:TypeVendorPicInput):
 
 @verifyRole(['inventory'])
 def insertVendorBankAccount(vendorId:str, vendorBankAccountInput:TypeVendorBankInput)->tuple[TypeVendor, int]:
-    # check if vendor data exists
     try:
+        # check if vendor data exists
         vendorData = validateUniqueField('_id', ObjectId(vendorId))
+        if not vendorData:
+            return {
+                'message': 'Vendor Data Not Found'
+            }, 404
+
+        # validate bank data with BE
+        bankData = findMasterBankById(vendorBankAccountInput['bankId'])[0]
+
+        vendorDataUpdated = vendorCollection.find_one_and_update(
+            {'_id': ObjectId(vendorId)}, 
+            {
+                '$push': {
+                    'accountBank': {
+                        **vendorBankAccountInput,
+                        'bankName': bankData['name']
+                    }
+                },
+                '$set': {
+                    'setup.updateDate': datetime.now(UTC),
+                    'setup.updateUser': g.user['_id']
+                }
+            }, 
+            return_document=True
+        )
+
+        return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
+    
     except InvalidId:
         abort(422, 'Invalid Vendor ID')
-    if not vendorData:
-        abort(404, 'Vendor Data Not Found')
-
-    # get bank data
-    bankData = findMasterBankById(vendorBankAccountInput['bankId'])[0]
-
-    vendorData = {
-        **vendorData,
-        'setup': {
-            **vendorData['setup'],
-            'updateDate': datetime.now(UTC),
-            # TODO: change to user data
-            'updateUser': 'SYSTEM'
-        },
-        'accountBank': vendorData['accountBank'] + [{
-            **vendorBankAccountInput,
-            'bankName': bankData['name']
-        }]
-    }
-
-    # update vendor data
-    try:
-        vendorDataUpdated = vendorCollection.find_one_and_update({
-            '_id': ObjectId(vendorId)
-        }, {
-            '$set': vendorData
-        }, return_document=True)
     except WriteError as e:
         errorMessage = e.details.get('errmsg', str(e))
         abort(422, errorMessage)
     except Exception as e:
         abort(500, str(e))
-
-    return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
 
 @verifyRole(['inventory'])
 def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
