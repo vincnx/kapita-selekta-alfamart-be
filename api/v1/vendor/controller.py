@@ -46,7 +46,7 @@ def findVendorById(vendorId: str) -> tuple[dict[str, TypeVendor], int]:
         abort(500, str(e))
 
 @verifyRole(['inventory'])
-def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
+def insertVendor(vendorInput:TypeVendorInput) -> tuple[TypeVendor, int]:
     try:
         # check if vendor name already exists
         anotherVendorData = validateUniqueField('vendorName', vendorInput['vendorName'].lower())
@@ -80,7 +80,7 @@ def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
     return {**vendorData, '_id': str(response.inserted_id)}, 201
 
 @verifyRole(['inventory'])
-def insertVendorBranchOffice(vendorId:str, vendorBranchOfficeInput:TypeVendorBranchOfficeInput)->tuple[TypeVendor, int]:
+def insertVendorBranchOffice(vendorId:str, vendorBranchOfficeInput:TypeVendorBranchOfficeInput) -> tuple[TypeVendor, int]:
     try:
         # check if vendor data exists
         vendorData = validateUniqueField('_id', ObjectId(vendorId))
@@ -113,45 +113,42 @@ def insertVendorBranchOffice(vendorId:str, vendorBranchOfficeInput:TypeVendorBra
     except Exception as e:
         abort(500, str(e))
 
-
 @verifyRole(['inventory'])
-def insertVendorPic(vendorId:str, vendorPicInput:TypeVendorPicInput):
-    # check if vendor data exists
+def insertVendorPic(vendorId:str, vendorPicInput:TypeVendorPicInput) -> tuple[TypeVendor, int]:
     try:
+        # check if vendor data exists
         vendorData = validateUniqueField('_id', ObjectId(vendorId))
+        if not vendorData:
+            return {
+                'message': 'Vendor Data Not Found'
+            }, 404
+
+        vendorDataUpdated = vendorCollection.find_one_and_update(
+            {'_id': ObjectId(vendorId)}, 
+            {
+                '$push': {
+                    'pic': vendorPicInput
+                },
+                '$set': {
+                    'setup.updateDate': datetime.now(UTC),
+                    'setup.updateUser': g.user['_id']
+                }
+            }, 
+            return_document=True
+        )
+        
+        return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
+    
     except InvalidId:
         abort(422, 'Invalid Vendor ID')
-    if not vendorData:
-        abort(404, 'Vendor Data Not Found')
-
-    vendorData = {
-        **vendorData,
-        'setup': {
-            **vendorData['setup'],
-            'updateDate': datetime.now(UTC),
-            # TODO: change to user data
-            'updateUser': 'SYSTEM'
-        },
-        'pic': vendorData['pic'] + [vendorPicInput]
-    }
-
-    # update vendor data
-    try:
-        vendorDataUpdated = vendorCollection.find_one_and_update({
-            '_id': ObjectId(vendorId)
-        }, {
-            '$set': vendorData
-        }, return_document=True)
     except WriteError as e:
         errorMessage = e.details.get('errmsg', str(e))
         abort(422, errorMessage)
     except Exception as e:
         abort(500, str(e))
 
-    return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
-
 @verifyRole(['inventory'])
-def insertVendorBankAccount(vendorId:str, vendorBankAccountInput:TypeVendorBankInput)->tuple[TypeVendor, int]:
+def insertVendorBankAccount(vendorId:str, vendorBankAccountInput:TypeVendorBankInput) -> tuple[TypeVendor, int]:
     try:
         # check if vendor data exists
         vendorData = validateUniqueField('_id', ObjectId(vendorId))
@@ -191,7 +188,7 @@ def insertVendorBankAccount(vendorId:str, vendorBankAccountInput:TypeVendorBankI
         abort(500, str(e))
 
 @verifyRole(['inventory'])
-def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
+def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput) -> tuple[TypeVendor, int]:
     try:
         # check if vendor data exists
         vendorData = validateUniqueField('_id', ObjectId(vendorId))
@@ -230,7 +227,7 @@ def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVen
         abort(500, str(e))
 
 @verifyRole(['inventory'])
-def removeVendor(vendorId:str)->tuple[None, int]:
+def removeVendor(vendorId:str) -> tuple[None, int]:
     try:
         # check if vendor data exists
         vendorData = validateUniqueField('_id', ObjectId(vendorId))
@@ -258,7 +255,7 @@ def removeVendor(vendorId:str)->tuple[None, int]:
         abort(500, str(e))
 
 # helper function
-def validateUniqueField(fieldToValidate:str, valueToValidate:Any, excludeId:str = None)->TypeVendor:
+def validateUniqueField(fieldToValidate:str, valueToValidate:Any, excludeId:str = None) -> TypeVendor:
     query ={
         fieldToValidate : valueToValidate,
         'activeStatus': True
