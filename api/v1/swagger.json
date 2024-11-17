@@ -134,7 +134,7 @@
         }
       }
     },
-    "/master-bank": {
+    "/bank": {
       "get": {
         "tags": ["Master Bank"],
         "description": "Get all master bank",
@@ -178,7 +178,7 @@
         }
       }
     },
-    "/master-bank/{masterBankId}": {
+    "/bank/{masterBankId}": {
       "get": {
         "tags": ["Master Bank"],
         "description": "Get master bank by id",

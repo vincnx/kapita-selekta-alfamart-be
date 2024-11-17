@@ -3,128 +3,114 @@ from bson import ObjectId
 from pymongo.errors import WriteError
 from common.db import dbInstance
 from common.helpers.types import TypeMasterBank, TypeMasterBankInput
-from flask import abort
+from flask import abort, g
+from bson.errors import InvalidId
+from werkzeug.exceptions import HTTPException
 
 masterBankCollection = dbInstance.db['VMS BANK']
 
-def findAllMasterBank()->tuple[list[TypeMasterBank], int]:
+def findAllMasterBank() -> tuple[list[TypeMasterBank], int]:
     try:
         allMasterBankData = list(masterBankCollection.find({'activeStatus': True}))
+        
+        return {
+            'data': [
+                {**masterBank, '_id': str(masterBank['_id'])}
+                for masterBank in allMasterBankData
+            ]
+        }, 200
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
-    
-    return {
-        'data': [
-            {**masterBank, '_id': str(masterBank['_id'])}
-            for masterBank in allMasterBankData
-        ]
-    }, 200
 
-def findMasterBankById(masterBankId:str)->tuple[TypeMasterBank, int]:
-    # check if master bank data exists
-    print(masterBankId)
+def findMasterBankById(masterBankId:str) -> tuple[TypeMasterBank, int]:
     try:
         masterBankData = masterBankCollection.find_one({
             '_id': ObjectId(masterBankId),
             'activeStatus': True
         })
+        if not masterBankData:
+            abort(404, 'Master Bank Data not Found')
+
+        return {**masterBankData, '_id': str(masterBankData['_id'])}, 200
+    except InvalidId:
+        abort(422, 'Invalid Master Bank Id')
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
-    if not masterBankData:
-        abort(404, 'Master Bank Data not Found')
-    
-    return {**masterBankData, '_id': str(masterBankData['_id'])}, 200
 
-def insertMasterBank(masterBankInput:TypeMasterBankInput)->tuple[TypeMasterBank, int]:
-    masterBankData = {
-        'name': masterBankInput['name'],
-        'bankDesc': masterBankInput['bankDesc'].lower(),
-        'activeStatus': True,
-        'setup': {
-            'createDate': datetime.now(UTC),
-            'updateDate': datetime.now(UTC),
-            # TODO: change to user data
-            'createUser': 'SYSTEM',
-            'updateUser': 'SYSTEM'
-        }
-    }
-
-    # insert master bank data
+def insertMasterBank(masterBankInput:TypeMasterBankInput) -> tuple[TypeMasterBank, int]:
     try:
+        masterBankData = {
+            'name': masterBankInput['name'],
+            'bankDesc': masterBankInput['bankDesc'].lower(),
+            'activeStatus': True,
+            'setup': {
+                'createDate': datetime.now(UTC),
+                'updateDate': datetime.now(UTC),
+                'createUser': g.user['_id'],
+                'updateUser': g.user['_id']
+            }
+        }
+
         response = masterBankCollection.insert_one(masterBankData)
+
+        return {**masterBankData, '_id':str(response.inserted_id)}, 201
     except WriteError as e:
-        error_message = e.details.get('errmsg', str(e))
-        abort(422, error_message)
+        errorMessage = e.details.get('errmsg', str(e))
+        abort(422, errorMessage)
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
-    return {**masterBankData, '_id':str(response.inserted_id)}, 201
-
-def updateMasterBank(masterBankId:str, masterBankInput:TypeMasterBankInput)->tuple[TypeMasterBank, int]:
-    # check if master bank data exists
+def updateMasterBank(masterBankId:str, masterBankInput:TypeMasterBankInput) -> tuple[TypeMasterBank, int]:
     try:
-        masterBankData = masterBankCollection.find_one({
-            '_id': ObjectId(masterBankId),
-            'activeStatus': True
-        })
-    except Exception as e:
-        abort(500, str(e))
-    if not masterBankData:
-        abort(404, 'Master Bank Data not Found')
+        # check if master bank data exists
+        findMasterBankById(masterBankId)
 
-    # prepare data to update
-    masterBankData = {
-        **masterBankData,
-        'name': masterBankInput['name'],
-        'bankDesc': masterBankInput['bankDesc'].lower(),
-        'setup': {
-            **masterBankData['setup'],
-            'updateDate': datetime.now(UTC),
-            # TODO: change to user data
-            'updateUser': 'SYSTEM'
-        }
-    }
+        masterBankDataUpdated = masterBankCollection.find_one_and_update(
+            {'_id': ObjectId(masterBankId)}, 
+            {
+                '$set': {
+                    'name': masterBankInput['name'],
+                    'bankDesc': masterBankInput['bankDesc'].lower(),
+                    'setup.updateDate': datetime.now(UTC),
+                    'setup.updateUser': g.user['_id']
+                }
+            }, 
+            return_document=True
+        )
 
-    # update master bank data
-    try:
-        masterBankDataUpdated = masterBankCollection.find_one_and_update({
-            '_id': ObjectId(masterBankId)
-        }, {
-            '$set': masterBankData
-        }, return_document=True)
+        return {**masterBankDataUpdated, '_id': str(masterBankDataUpdated['_id'])}, 200
+    except WriteError as e:
+        errorMessage = e.details.get('errmsg', str(e))
+        abort(422, errorMessage)
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
-    return {**masterBankDataUpdated, '_id': str(masterBankDataUpdated['_id'])}, 200
-
-def removeMasterBank(masterBankId:str)->tuple[None, int]:
-    # check if master bank data exists
+def removeMasterBank(masterBankId:str) -> tuple[None, int]:
     try:
-        masterBankData = masterBankCollection.find_one({
-            '_id': ObjectId(masterBankId),
-            'activeStatus': True
-        })
-    except Exception as e:
-        abort(500, str(e))
-    if not masterBankData:
-        abort(404, 'Master Bank Data not Found')
+        # check if master bank data exists
+        findMasterBankById(masterBankId)
 
-    # update master bank data
-    try:
-        masterBankCollection.update_one({
-            '_id': ObjectId(masterBankId)
-        }, {
-            '$set': {
-                'activeStatus': False,
-                'setup': {
-                    **masterBankData['setup'],
-                    'updateDate': datetime.now(UTC),
-                    # TODO: change to user data
-                    'updateUser': 'SYSTEM'
+        masterBankCollection.update_one(
+            {'_id': ObjectId(masterBankId)}, 
+            {
+                '$set': {
+                    'activeStatus': False,
+                    'setup.updateDate': datetime.now(UTC),
+                    'setup.updateUser': g.user['_id']
                 }
             }
-        })
-    except Exception as e:
-        abort(500, str(e))
+        )
 
-    return None, 204
+        return None, 204
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        abort(500, str(e))
