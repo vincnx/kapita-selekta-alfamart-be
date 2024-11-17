@@ -1,7 +1,8 @@
 from datetime import datetime, UTC
 from typing import Any, List
 from bson import ObjectId
-from flask import abort
+from flask import abort, g
+from api.v1.middlewares.verifyRole import verifyRole
 from common.db import dbInstance
 from common.helpers.types import TypeProduct, TypeProductInput
 from bson.errors import InvalidId
@@ -60,37 +61,41 @@ def findProductsByIds(productIds: List[str]) -> tuple[list[TypeProduct], int]:
     except Exception as e:
         abort(500, str(e))
 
-def insertProduct(productInput:TypeProductInput)->tuple[TypeProduct, int]:
-    # check if product name already exists
-    anotherProductData = validateUniqueField('name', productInput['name'])
-    if anotherProductData:
-        abort(409, 'Product Name Already Exists')
-
-    productData = {
-        'vendor': {
-            'vendorName': vendorController.findVendorById(productInput['vendorId'])[0]['data']['vendorName'],
-            'vendorId': productInput.pop('vendorId')
-        },
-        **productInput,
-        'setup': {
-            'createDate' : datetime.now(UTC),
-            'updateDate': datetime.now(UTC),
-            # TODO: change to user data
-            'createUser': 'SYSTEM',
-            'updateUser': 'SYSTEM'
-        }
-    }
-
+@verifyRole(['inventory'])
+def insertProduct(productInput:TypeProductInput) -> tuple[TypeProduct, int]:
     try:
+        # check if product name already exists
+        anotherProductData = validateUniqueField('name', productInput['name'])
+        if anotherProductData:
+            return {
+                'message': 'Product Name Already Exists'
+            }, 409
+
+        # validate vendor data with BE
+        vendorData = vendorController.findVendorById(productInput['vendorId'])[0]['data']
+
+        productData = {
+            'vendor': {
+                'vendorName': vendorData['vendorName'],
+                'vendorId': vendorData['_id']
+            },
+            **productInput,
+            'setup': {
+                'createDate' : datetime.now(UTC),
+                'updateDate': datetime.now(UTC),
+                'createUser': g.user['_id'],
+                'updateUser': g.user['_id']
+            }
+        }
         response = productCollection.insert_one(productData)
+
+        return {**productData, '_id': str(response.inserted_id)}, 201
     except WriteError as e:
         error_message = e.details.get('errmsg', str(e))
         abort(422, error_message)
     except Exception as e:
         abort(500, str(e))
     
-    return {**productData, '_id': str(response.inserted_id)}, 201
-
 def updateProduct(productId:str, productInput:TypeProductInput)->tuple[TypeProduct, int]:
     # check if product data exists
     productData = findProductById(productId)[0]['data']
