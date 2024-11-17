@@ -95,43 +95,47 @@ def insertProduct(productInput:TypeProductInput) -> tuple[TypeProduct, int]:
         abort(422, error_message)
     except Exception as e:
         abort(500, str(e))
-    
-def updateProduct(productId:str, productInput:TypeProductInput)->tuple[TypeProduct, int]:
-    # check if product data exists
-    productData = findProductById(productId)[0]['data']
 
-    # check if another product name already exists
-    anotherProductData = validateUniqueField('name', productInput['name'], productId)
-    if anotherProductData:
-        abort(409, 'Product Name Already Exists')
-
-    productData = {
-        'vendor': {
-            'vendorName': vendorController.findVendorById(productInput['vendorId'])[0]['data']['vendorName'],
-            'vendorId': productInput.pop('vendorId')
-        },
-        **productInput,
-        'setup': {
-            **productData['setup'],
-            'updateDate': datetime.now(UTC),
-            # TODO: change to user data
-            'updateUser': 'SYSTEM'
-        }
-    }
-
+@verifyRole(['inventory'])
+def updateProduct(productId:str, productInput:TypeProductInput) -> tuple[TypeProduct, int]:
     try:
-        productDataUpdated = productCollection.find_one_and_update({
-            '_id': ObjectId(productId)
-        }, {
-            '$set': productData
-        }, return_document=True)
+        # check if product data exists
+        productData = validateUniqueField('_id', ObjectId(productId))
+        if not productData:
+            return {
+                'message': 'Product Data Not Found'
+            }, 404
+
+        # check if another product name already exists
+        anotherProductData = validateUniqueField('name', productInput['name'], productId)
+        if anotherProductData:
+            return {
+                'message': 'Product Name Already Exists'
+            }, 409
+        
+        # validate vendor data with BE
+        vendorData = vendorController.findVendorById(productInput['vendorId'])[0]['data']
+
+        productDataUpdated = productCollection.find_one_and_update(
+            {'_id': ObjectId(productId)},
+            {
+                '$set': {
+                    **productInput,
+                    'vendor.vendorName': vendorData['vendorName'],
+                    'vendor.vendorId': vendorData['_id'],
+                    'setup.updateDate': datetime.now(UTC),
+                    'setup.updateUser': g.user['_id']
+                }
+            }, 
+            return_document=True
+        )
+
+        return {**productDataUpdated, '_id': str(productDataUpdated['_id'])}, 200
     except WriteError as e:
-        error_message = e.details.get('errmsg', str(e))
-        abort(422, error_message)
+        errorMessage = e.details.get('errmsg', str(e))
+        abort(422, errorMessage)
     except Exception as e:
         abort(500, str(e))
-
-    return {**productDataUpdated, '_id': str(productDataUpdated['_id'])}, 200
 
 def removeProduct(productId:str)->tuple[None, int]:
     # check if product data exists
