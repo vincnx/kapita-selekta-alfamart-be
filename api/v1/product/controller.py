@@ -23,22 +23,23 @@ def findAllProduct() -> tuple[list[TypeProduct], int]:
     except Exception as e:
         abort(500, str(e))
 
-def findProductById(productId:str)->tuple[TypeProduct, int]:
-    # check if product data exists
+def findProductById(productId:str) -> tuple[TypeProduct, int]:
     try:
         productData = productCollection.find_one({
             '_id': ObjectId(productId)
         })
+        if not productData:
+            return {
+                'message': 'Product Data Not Found'
+            }, 404
+
+        return {
+            'data': {**productData, '_id': str(productData['_id'])}
+        }, 200
     except InvalidId:
         abort(422, 'Invalid Product ID')
     except Exception as e:
         abort(500, str(e))
-    if not productData:
-        abort(404, 'Product Data Not Found')
-
-    return {
-        'data': {**productData, '_id': str(productData['_id'])}
-    }, 200
 
 def findProductsByIds(productIds: List[str]) -> tuple[list[TypeProduct], int]:
     try:
