@@ -81,39 +81,38 @@ def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
 
 @verifyRole(['inventory'])
 def insertVendorBranchOffice(vendorId:str, vendorBranchOfficeInput:TypeVendorBranchOfficeInput)->tuple[TypeVendor, int]:
-    # check if vendor data exists
     try:
+        # check if vendor data exists
         vendorData = validateUniqueField('_id', ObjectId(vendorId))
+        if not vendorData:
+            return {
+                'message': 'Vendor Data Not Found'
+            }, 404
+
+        vendorDataUpdated = vendorCollection.find_one_and_update(
+            {'_id': ObjectId(vendorId)}, 
+            {
+                '$push': {
+                    'branchOffice': vendorBranchOfficeInput
+                },
+                '$set': {
+                    'setup.updateDate': datetime.now(UTC),
+                    'setup.updateUser': g.user['_id']
+                }
+            }, 
+            return_document=True
+        )
+    
+        return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
+    
     except InvalidId:
         abort(422, 'Invalid Vendor ID')
-    if not vendorData:
-        abort(404, 'Vendor Data Not Found')
-
-    vendorData = {
-        **vendorData,
-        'setup': {
-            **vendorData['setup'],
-            'updateDate': datetime.now(UTC),
-            # TODO: change to user data
-            'updateUser': 'SYSTEM'
-        },
-        'branchOffice': vendorData['branchOffice'] + [vendorBranchOfficeInput]
-    }
-
-    # update vendor data
-    try:
-        vendorDataUpdated = vendorCollection.find_one_and_update({
-            '_id': ObjectId(vendorId)
-        }, {
-            '$set': vendorData
-        }, return_document=True)
     except WriteError as e:
         errorMessage = e.details.get('errmsg', str(e))
         abort(422, errorMessage)
     except Exception as e:
         abort(500, str(e))
 
-    return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
 
 @verifyRole(['inventory'])
 def insertVendorPic(vendorId:str, vendorPicInput:TypeVendorPicInput):
