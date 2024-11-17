@@ -10,18 +10,18 @@ from pymongo.errors import WriteError
 
 productCollection = dbInstance.db['PRODUCT']
 
-def findAllProduct()->tuple[list[TypeProduct], int]:
+def findAllProduct() -> tuple[list[TypeProduct], int]:
     try:
         allProductData = list(productCollection.find())
+
+        return {
+            'data': [
+                {**product, '_id': str(product['_id'])}
+                for product in allProductData
+            ]
+        }, 200
     except Exception as e:
         abort(500, str(e))
-
-    return {
-        'data': [
-            {**product, '_id': str(product['_id'])}
-            for product in allProductData
-        ]
-    }, 200
 
 def findProductById(productId:str)->tuple[TypeProduct, int]:
     # check if product data exists
