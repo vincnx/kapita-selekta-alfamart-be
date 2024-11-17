@@ -191,46 +191,43 @@ def insertVendorBankAccount(vendorId:str, vendorBankAccountInput:TypeVendorBankI
 
 @verifyRole(['inventory'])
 def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
-    # check if vendor data exists
     try:
+        # check if vendor data exists
         vendorData = validateUniqueField('_id', ObjectId(vendorId))
+        if not vendorData:
+            return {
+                'message': 'Vendor Data Not Found'
+            }, 404
+        
+        # check if new vendor name already exists
+        anotherVendorData = validateUniqueField('vendorName', vendorInput['vendorName'].lower(), vendorId)
+        if anotherVendorData:
+            return {
+                'message': 'Vendor Name Already Exists'
+            }, 409
+
+        vendorDataUpdated = vendorCollection.find_one_and_update(
+            {'_id': ObjectId(vendorId)},
+            {
+                '$set': {
+                    **vendorInput,
+                    'setup.updateDate': datetime.now(UTC),
+                    'setup.updateUser': g.user['_id']
+                }
+            }, 
+            return_document=True
+        )
+
+        return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
+
     except InvalidId:
         abort(422, 'Invalid Vendor ID')
-    if not vendorData:
-        abort(404, 'Vendor Data Not Found')
-    
-    # check if vendor name already exists
-    anotherVendorData = validateUniqueField('vendorName', vendorInput['vendorName'].lower(), vendorId)
-    if anotherVendorData:
-        abort(409, 'Vendor Name Already Exists')
-
-    vendorData = {
-        **vendorInput,
-        'branchOffice': vendorData['branchOffice'],
-        'pic': vendorData['pic'],
-        'accountBank': vendorData['accountBank'],
-        'setup': {
-            **vendorData['setup'],
-            'updateDate': datetime.now(UTC),
-            # TODO: change to user data
-            'updateUser': 'SYSTEM'
-        }
-    }
-
-    # update vendor data
-    try:
-        vendorDataUpdated = vendorCollection.find_one_and_update({
-            '_id': ObjectId(vendorId)
-        }, {
-            '$set': vendorData
-        }, return_document=True)
     except WriteError as e:
         error_message = e.details.get('errmsg', str(e))
         abort(422, error_message)
     except Exception as e:
         abort(500, str(e))
 
-    return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
 
 @verifyRole(['inventory'])
 def removeVendor(vendorId:str)->tuple[None, int]:
