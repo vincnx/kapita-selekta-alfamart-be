@@ -45,6 +45,7 @@ def findVendorById(vendorId: str) -> tuple[dict[str, TypeVendor], int]:
     except Exception as e:
         abort(500, str(e))
 
+@verifyRole(['inventory'])
 def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
     try:
         # check if vendor name already exists
@@ -78,6 +79,7 @@ def insertVendor(vendorInput:TypeVendorInput)->tuple[TypeVendor, int]:
     
     return {**vendorData, '_id': str(response.inserted_id)}, 201
 
+@verifyRole(['inventory'])
 def insertVendorBranchOffice(vendorId:str, vendorBranchOfficeInput:TypeVendorBranchOfficeInput)->tuple[TypeVendor, int]:
     # check if vendor data exists
     try:
@@ -228,36 +230,33 @@ def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput)->tuple[TypeVen
     except Exception as e:
         abort(500, str(e))
 
-
 @verifyRole(['inventory'])
 def removeVendor(vendorId:str)->tuple[None, int]:
-    # check if vendor data exists
     try:
+        # check if vendor data exists
         vendorData = validateUniqueField('_id', ObjectId(vendorId))
-    except InvalidId:
-        abort(422, 'Invalid Vendor ID')
-    if not vendorData:
-        abort(404, 'Vendor Data Not Found')
-    
-    # remove vendor data
-    try:
-        vendorCollection.update_one({
-            '_id': ObjectId(vendorId)
-        }, {
-            '$set': {
-                'activeStatus': False,
-                'setup': {
-                    **vendorData['setup'],
-                    'updateDate': datetime.now(UTC),
-                    # TODO: change to user data
-                    'updateUser': 'SYSTEM'
+        if not vendorData:
+            return {
+                'message': 'Vendor Data Not Found'
+            }, 404
+        
+        vendorCollection.update_one(
+            {'_id': ObjectId(vendorId)}, 
+            {
+                '$set': {
+                    'activeStatus': False,
+                    'setup.updateDate': datetime.now(UTC),
+                    'setup.updateUser': g.user['_id']
                 }
             }
-        })
+        )
+
+        return None, 204
+    
+    except InvalidId:
+        abort(422, 'Invalid Vendor ID')
     except Exception as e:
         abort(500, str(e))
-
-    return None, 204
 
 # helper function
 def validateUniqueField(fieldToValidate:str, valueToValidate:Any, excludeId:str = None)->TypeVendor:
