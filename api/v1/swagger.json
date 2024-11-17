@@ -1001,6 +1001,37 @@
           }
         }
       }
+    },
+    "/user": {
+      "post": {
+        "tags": ["User"],
+        "description": "Create User",
+        "summary": "Create User",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/201"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1249,6 +1280,26 @@
           },
           "count": {
             "type": "integer"
+          }
+        }
+      },
+      "UserInput": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "userRole": {
+            "type": "string",
+            "enum": ["inventory", "branch"]
+          },
+          "branchId": {
+            "type": "string",
+            "example": "670b1e82d3391522cc3dc538",
+            "nullable": true
           }
         }
       }

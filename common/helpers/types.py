@@ -192,3 +192,10 @@ TypeBranchProductInput = TypedDict('TypeBranchProductInput', {
     'productId': str,
     'count': int
 })
+
+TypeUserInput = TypedDict('TypeUserInput', {
+    'username': str,
+    'password': str,
+    'userRole': Literal['inventory', 'branch'],
+    'branchId': NotRequired[str]
+})
