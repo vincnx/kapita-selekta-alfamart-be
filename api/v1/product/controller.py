@@ -169,30 +169,3 @@ def validateUniqueField(fieldToValidate:str, valueToValidate:Any, excludeId:str 
         abort(500, str(e))
 
     return productData
-
-def validateRequiredField(productInput:TypeProductInput)->dict:
-    try:
-        validatedRequiredField = {
-            'name': productInput['name'],
-            'merk' : productInput['merk'],
-            'condition': productInput['condition'],
-            'count': productInput['count'],
-            'vendor': {
-                'vendorId': productInput['vendorId']
-            },
-            'setup': {
-                'createDate': productInput.get('setup', {}).get('createDate', datetime.now(UTC)),
-                'updateDate': datetime.now(UTC),
-                # TODO: change to user data
-                'createUser': productInput.get('setup', {}).get('createUser', 'SYSTEM'),
-                'updateUser': 'SYSTEM'
-            }
-        }
-    except KeyError as e:
-        abort(422, f'Missing required field: {str(e)}')
-    except Exception as e:
-        abort(500, str(e))
-    if validatedRequiredField['count'] <= 0:
-        abort(422, 'Count must be greater than 0')
-
-    return validatedRequiredField
