@@ -44,22 +44,21 @@ def findProductById(productId:str) -> tuple[TypeProduct, int]:
 def findProductsByIds(productIds: List[str]) -> tuple[list[TypeProduct], int]:
     try:
         objectIds = [ObjectId(productId) for productId in productIds]
-    except InvalidId:
-        abort(422, 'Invalid ProductId')
         
-    try:
-        products = list(productCollection.find({
-            '_id': {'$in': objectIds}
-        }))
+        products = list(productCollection.find(
+            {'_id': {'$in': objectIds}}
+        ))
+
+        return {
+            'data': [
+                {**product, '_id': str(product['_id'])}
+                for product in products
+            ]
+        }, 200
+    except InvalidId:
+        abort(422, 'Invalid Product ID')
     except Exception as e:
         abort(500, str(e))
-
-    return {
-        'data': [
-            {**product, '_id': str(product['_id'])}
-            for product in products
-        ]
-    }, 200
 
 def insertProduct(productInput:TypeProductInput)->tuple[TypeProduct, int]:
     # check if product name already exists
