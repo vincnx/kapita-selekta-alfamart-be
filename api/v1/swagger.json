@@ -248,6 +248,18 @@
         "tags": ["Vendor"],
         "description": "Get All Vendor",
         "summary": "Get All Vendor",
+        "parameters": [
+          {
+            "name": "active",
+            "in": "query",
+            "description": "Filter vendors by active status",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
         "responses": {
           "200": {
             "$ref": "#/components/responses/200"

@@ -6,7 +6,8 @@ vendorRoutes = Blueprint('vendorRoutes', __name__, url_prefix='/v1/vendor')
 
 @vendorRoutes.route('', methods=['GET'])
 def getAllVendor():
-    data, status = findAllVendor()
+    params = request.args
+    data, status = findAllVendor(params)
     return jsonify(data), status
 
 @vendorRoutes.route('/<string:vendorId>', methods=['GET'])

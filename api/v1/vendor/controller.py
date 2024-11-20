@@ -11,11 +11,15 @@ from pymongo.errors import WriteError
 
 vendorCollection = dbInstance.db['VMS VENDOR']
 
-def findAllVendor() -> tuple[dict[str, TypeVendor], int]:
+def findAllVendor(params:dict[str, Any]) -> tuple[dict[str, TypeVendor], int]:
+    active = params.get('active', False)
+    query = {}
+
+    if active == 'true' or active == 'false':
+        query['activeStatus'] = bool(active)
+
     try:
-        allVendorData = list(vendorCollection.find({
-            'activeStatus': True
-        }))
+        allVendorData = list(vendorCollection.find(query))
     
         return {
             'data' : [
