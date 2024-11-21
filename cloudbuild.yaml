@@ -18,4 +18,6 @@ steps:
       - 'managed'
       - '--allow-unauthenticated'
       - '--set-env-vars'
-      - 'MONGODB_URI=mongodb+srv://vincentexelcio552:mongodb@kapita-tas.5xacj.mongodb.net/,MONGODB_DB=kapita-tas,REDIS_URL=redis://b56e784c-49a7-4adf-be06-7192ca6ea73e@10.85.49.147:6379/0'
+      - 'MONGODB_URI=mongodb+srv://vincentexelcio552:mongodb@kapita-tas.5xacj.mongodb.net/\
+        MONGODB_DB=kapita-tas\
+        REDIS_URL=redis://b56e784c-49a7-4adf-be06-7192ca6ea73e@10.85.49.147:6379/0'
