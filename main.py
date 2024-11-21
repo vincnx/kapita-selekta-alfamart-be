@@ -12,17 +12,41 @@ from api.v1.request.routes import requestRoutes
 from api.v1.branch.routes import branchRoutes
 from api.v1.user.routes import userRoutes
 from flask_session import Session
+from common.db import dbInstance
 
 app = Flask(__name__)
 
 app.config.from_object(Config)
-app.config['SESSION_REDIS'] = redis.from_url(Config.SESSION_REDIS)
-server_session = Session(app)
+
+try:
+    redis_client = redis.from_url(Config.SESSION_REDIS)
+    redis_client.ping()
+    app.config['SESSION_REDIS'] = redis_client
+    server_session = Session(app)
+except (redis.ConnectionError, redis.RedisError) as e:
+    print(f'Warning: Redis connection failed - {str(e)}')
+
 CORS(app, supports_credentials=True)
 
 @app.route('/')
 def index():
-    return 'TA Kapita Selekta'
+    mongo_status = 'Connected'
+    try:
+        dbInstance.client.admin.command('ping')
+    except Exception as e:
+        mongo_status = f'Error: {str(e)}'
+
+    redis_status = 'Connected'
+    try:
+        app.config['SESSION_REDIS'].ping()
+    except Exception as e:
+        redis_status = f'Error: Redis is not connected'
+    
+    return jsonify({
+        'message': 'TA Kapita Selekta',
+        'mongodb_status': mongo_status,
+        'redis_status': redis_status
+    })
 
 @app.before_request
 def verifySession():
