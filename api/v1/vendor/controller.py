@@ -8,6 +8,7 @@ from bson.errors import InvalidId
 from common.helpers.types import TypeVendor, TypeVendorBankInput, TypeVendorBranchOfficeInput, TypeVendorInput, TypeVendorPicInput
 from flask import abort, g
 from pymongo.errors import WriteError
+from werkzeug.exceptions import HTTPException
 
 vendorCollection = dbInstance.db['VMS VENDOR']
 
@@ -28,6 +29,8 @@ def findAllVendor(params:dict[str, Any]) -> tuple[dict[str, TypeVendor], int]:
             ]
         }, 200
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
 def findVendorById(vendorId: str) -> tuple[dict[str, TypeVendor], int]:
@@ -37,9 +40,7 @@ def findVendorById(vendorId: str) -> tuple[dict[str, TypeVendor], int]:
             'activeStatus': True
         })
         if not vendorData:
-            return {
-                'message': 'Vendor Data Not Found'
-            }, 404
+            abort(404, 'Vendor Data Not Found')
 
         return {
             'data': {**vendorData, '_id': str(vendorData['_id'])}
@@ -47,6 +48,8 @@ def findVendorById(vendorId: str) -> tuple[dict[str, TypeVendor], int]:
     except InvalidId:
         abort(422, 'Invalid Vendor ID')
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
 @verifyRole(['inventory'])
@@ -55,9 +58,7 @@ def insertVendor(vendorInput:TypeVendorInput) -> tuple[TypeVendor, int]:
         # check if vendor name already exists
         anotherVendorData = validateUniqueField('vendorName', vendorInput['vendorName'].lower())
         if anotherVendorData:
-            return {
-                'message': 'Vendor Name Already Exists'
-            }, 409
+            abort(409, 'Vendor Name Already Exists')
 
         vendorData = {
             **vendorInput,
@@ -75,23 +76,21 @@ def insertVendor(vendorInput:TypeVendorInput) -> tuple[TypeVendor, int]:
         }
 
         response = vendorCollection.insert_one(vendorData)
+
+        return {**vendorData, '_id': str(response.inserted_id)}, 201
     except WriteError as e:
         errorMessage = e.details.get('errmsg', str(e))
         abort(422, errorMessage)
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
-    
-    return {**vendorData, '_id': str(response.inserted_id)}, 201
 
 @verifyRole(['inventory'])
 def insertVendorBranchOffice(vendorId:str, vendorBranchOfficeInput:TypeVendorBranchOfficeInput) -> tuple[TypeVendor, int]:
     try:
         # check if vendor data exists
-        vendorData = validateUniqueField('_id', ObjectId(vendorId))
-        if not vendorData:
-            return {
-                'message': 'Vendor Data Not Found'
-            }, 404
+        findVendorById(vendorId)
 
         vendorDataUpdated = vendorCollection.find_one_and_update(
             {'_id': ObjectId(vendorId)}, 
@@ -108,24 +107,21 @@ def insertVendorBranchOffice(vendorId:str, vendorBranchOfficeInput:TypeVendorBra
         )
     
         return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
-    
     except InvalidId:
         abort(422, 'Invalid Vendor ID')
     except WriteError as e:
         errorMessage = e.details.get('errmsg', str(e))
         abort(422, errorMessage)
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
 @verifyRole(['inventory'])
 def insertVendorPic(vendorId:str, vendorPicInput:TypeVendorPicInput) -> tuple[TypeVendor, int]:
     try:
         # check if vendor data exists
-        vendorData = validateUniqueField('_id', ObjectId(vendorId))
-        if not vendorData:
-            return {
-                'message': 'Vendor Data Not Found'
-            }, 404
+        findVendorById(vendorId)
 
         vendorDataUpdated = vendorCollection.find_one_and_update(
             {'_id': ObjectId(vendorId)}, 
@@ -142,24 +138,21 @@ def insertVendorPic(vendorId:str, vendorPicInput:TypeVendorPicInput) -> tuple[Ty
         )
         
         return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
-    
     except InvalidId:
         abort(422, 'Invalid Vendor ID')
     except WriteError as e:
         errorMessage = e.details.get('errmsg', str(e))
         abort(422, errorMessage)
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
 @verifyRole(['inventory'])
 def insertVendorBankAccount(vendorId:str, vendorBankAccountInput:TypeVendorBankInput) -> tuple[TypeVendor, int]:
     try:
         # check if vendor data exists
-        vendorData = validateUniqueField('_id', ObjectId(vendorId))
-        if not vendorData:
-            return {
-                'message': 'Vendor Data Not Found'
-            }, 404
+        findVendorById(vendorId)
 
         # validate bank data with BE
         bankData = findMasterBankById(vendorBankAccountInput['bankId'])[0]
@@ -182,31 +175,26 @@ def insertVendorBankAccount(vendorId:str, vendorBankAccountInput:TypeVendorBankI
         )
 
         return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
-    
     except InvalidId:
         abort(422, 'Invalid Vendor ID')
     except WriteError as e:
         errorMessage = e.details.get('errmsg', str(e))
         abort(422, errorMessage)
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
 @verifyRole(['inventory'])
 def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput) -> tuple[TypeVendor, int]:
     try:
         # check if vendor data exists
-        vendorData = validateUniqueField('_id', ObjectId(vendorId))
-        if not vendorData:
-            return {
-                'message': 'Vendor Data Not Found'
-            }, 404
+        findVendorById(vendorId)
         
         # check if new vendor name already exists
         anotherVendorData = validateUniqueField('vendorName', vendorInput['vendorName'].lower(), vendorId)
         if anotherVendorData:
-            return {
-                'message': 'Vendor Name Already Exists'
-            }, 409
+            abort(409, 'Vendor Name Already Exists')
 
         vendorDataUpdated = vendorCollection.find_one_and_update(
             {'_id': ObjectId(vendorId)},
@@ -221,24 +209,21 @@ def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput) -> tuple[TypeV
         )
 
         return {**vendorDataUpdated, '_id': str(vendorDataUpdated['_id'])}, 200
-
     except InvalidId:
         abort(422, 'Invalid Vendor ID')
     except WriteError as e:
         error_message = e.details.get('errmsg', str(e))
         abort(422, error_message)
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
 @verifyRole(['inventory'])
 def removeVendor(vendorId:str) -> tuple[None, int]:
     try:
         # check if vendor data exists
-        vendorData = validateUniqueField('_id', ObjectId(vendorId))
-        if not vendorData:
-            return {
-                'message': 'Vendor Data Not Found'
-            }, 404
+        findVendorById(vendorId)
         
         vendorCollection.update_one(
             {'_id': ObjectId(vendorId)}, 
@@ -252,10 +237,11 @@ def removeVendor(vendorId:str) -> tuple[None, int]:
         )
 
         return None, 204
-    
     except InvalidId:
         abort(422, 'Invalid Vendor ID')
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
 # helper function
