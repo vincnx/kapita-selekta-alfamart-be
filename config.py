@@ -3,6 +3,7 @@ import os
 load_dotenv()
 
 class Config:
+    SECRET_KEY = os.getenv('SECRET_KEY')
     SESSION_TYPE = 'redis'
     SESSION_REDIS = os.getenv('REDIS_URL')
     SESSION_PERMANENT = False
