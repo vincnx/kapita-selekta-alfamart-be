@@ -195,3 +195,25 @@ def updateBranchProductByIdAndUser(productId: str, branchProductInput: TypeBranc
         if isinstance(e, HTTPException):
             raise e
         abort(500, str(e))
+
+@verifyRole(['branch'])
+def removeBranchProductByIdAndUser(productId: str) -> tuple[None, int]:
+    userData = g.user
+    
+    try:
+        # check if branch product exist
+        findBranchProductByIdAndUser(productId)
+
+        branchCollection.update_one(
+            {
+                '_id': ObjectId(userData['branch']['branchId']),
+                'product.productId': productId
+            },
+            {'$pull': {'product': {'productId': productId}}}
+        )
+
+        return None, 204
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        abort(500, str(e))

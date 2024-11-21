@@ -993,6 +993,36 @@
             "$ref": "#/components/responses/500"
           }
         }
+      },
+      "delete": {
+        "tags": ["Branch"],
+        "description": "Delete Branch Product by Id",
+        "summary": "Delete Branch Product by Id",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "description": "product id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/204"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
       }
     },
     "/user": {
