@@ -186,6 +186,31 @@ def insertVendorBankAccount(vendorId:str, vendorBankAccountInput:TypeVendorBankI
         abort(500, str(e))
 
 @verifyRole(['inventory'])
+def activateVendor(vendorId:str) -> tuple[None, int]:
+    try:
+        vendorResponse = vendorCollection.find_one_and_update(
+            {'_id': ObjectId(vendorId)},
+            {
+                '$set': {
+                    'activeStatus': True,
+                    'setup.updateDate': datetime.now(UTC),
+                    'setup.updateUser': g.user['_id']
+                }
+            },
+            return_document=True
+        )
+        if not vendorResponse:
+            abort(404, 'Vendor not found')
+
+        return None, 204
+    except InvalidId:
+        abort(422, 'Invalid Vendor ID')
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        abort(500, str(e))
+
+@verifyRole(['inventory'])
 def updateVendorDetail(vendorId:str, vendorInput:TypeVendorInput) -> tuple[TypeVendor, int]:
     try:
         # check if vendor data exists

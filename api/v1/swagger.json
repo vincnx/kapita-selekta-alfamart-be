@@ -256,7 +256,7 @@
             "required": false,
             "schema": {
               "type": "boolean",
-              "default": false
+              "default": null
             }
           }
         ],
@@ -334,6 +334,38 @@
         "tags": ["Vendor"],
         "description": "Delete Vendor by Id",
         "summary": "Delete Vendor by Id",
+        "parameters": [
+          {
+            "name": "vendorId",
+            "in": "path",
+            "description": "Vendor id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/204"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/vendor/{vendorId}/activate": {
+      "post": {
+        "tags": ["Vendor"],
+        "description": "Activate Vendor by Id",
+        "summary": "Activate Vendor by Id",
         "parameters": [
           {
             "name": "vendorId",
