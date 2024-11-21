@@ -11,9 +11,17 @@ from pymongo.errors import WriteError
 
 productCollection = dbInstance.db['PRODUCT']
 
-def findAllProduct() -> tuple[list[TypeProduct], int]:
+def findAllProduct(params:dict[str, Any]) -> tuple[list[TypeProduct], int]:
+    active = params.get('active', False)
+    query = {}
+
+    if active == 'true':
+        query['activeStatus'] = True
+    elif active == 'false':
+        query['activeStatus'] = False
+
     try:
-        allProductData = list(productCollection.find())
+        allProductData = list(productCollection.find(query))
 
         return {
             'data': [
@@ -79,6 +87,7 @@ def insertProduct(productInput:TypeProductInput) -> tuple[TypeProduct, int]:
                 'vendorName': vendorData['vendorName'],
                 'vendorId': vendorData['_id']
             },
+            'activeStatus': True,
             **productInput,
             'setup': {
                 'createDate' : datetime.now(UTC),
@@ -148,8 +157,12 @@ def removeProduct(productId:str)->tuple[None, int]:
     
     # remove product data
     try:
-        productCollection.delete_one({
+        productCollection.update_one({
             '_id' : ObjectId(productId)
+        }, {
+            '$set': {
+                'activeStatus': False
+            }
         })
     except Exception as e:
         abort(500, str(e))

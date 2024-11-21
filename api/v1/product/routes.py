@@ -6,7 +6,8 @@ productRoutes = Blueprint('ProductRoutes', __name__, url_prefix='/v1/product')
 
 @productRoutes.route('', methods=['GET'])
 def getAllProduct():
-    data, status = findAllProduct()
+    params = request.args
+    data, status = findAllProduct(params)
     return jsonify(data), status
 
 @productRoutes.route('/<productId>', methods=['GET'])

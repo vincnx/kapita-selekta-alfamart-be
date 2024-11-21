@@ -534,6 +534,18 @@
         "tags": ["Product"],
         "description": "Get All Product",
         "summary": "Get All Product",
+        "parameters": [
+          {
+            "name": "active",
+            "in": "query",
+            "description": "Filter products by active status",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": null
+            }
+          }
+        ],
         "responses": {
           "200": {
             "$ref": "#/components/responses/200"

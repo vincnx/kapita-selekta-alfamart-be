@@ -111,7 +111,8 @@ TypeProduct = TypedDict('TypeProduct', {
     'merk': str,
     'condition': str,
     'vendor': TypeProductVendor,
-    'setup': TypeSetup
+    'setup': TypeSetup,
+    'activeStatus': bool
 })
 
 TypeProductInput = TypedDict('TypeProductInput', {
