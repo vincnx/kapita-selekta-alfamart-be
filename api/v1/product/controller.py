@@ -8,6 +8,7 @@ from common.helpers.types import TypeProduct, TypeProductInput
 from bson.errors import InvalidId
 import api.v1.vendor.controller as vendorController
 from pymongo.errors import WriteError
+from werkzeug.exceptions import HTTPException
 
 productCollection = dbInstance.db['PRODUCT']
 
@@ -30,6 +31,8 @@ def findAllProduct(params:dict[str, Any]) -> tuple[list[TypeProduct], int]:
             ]
         }, 200
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
 def findProductById(productId:str) -> tuple[TypeProduct, int]:
@@ -38,9 +41,7 @@ def findProductById(productId:str) -> tuple[TypeProduct, int]:
             '_id': ObjectId(productId)
         })
         if not productData:
-            return {
-                'message': 'Product Data Not Found'
-            }, 404
+            abort(404, 'Product Data Not Found')
 
         return {
             'data': {**productData, '_id': str(productData['_id'])}
@@ -48,6 +49,8 @@ def findProductById(productId:str) -> tuple[TypeProduct, int]:
     except InvalidId:
         abort(422, 'Invalid Product ID')
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
 def findProductsByIds(productIds: List[str]) -> tuple[list[TypeProduct], int]:
@@ -67,6 +70,8 @@ def findProductsByIds(productIds: List[str]) -> tuple[list[TypeProduct], int]:
     except InvalidId:
         abort(422, 'Invalid Product ID')
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
 @verifyRole(['inventory'])
@@ -75,9 +80,7 @@ def insertProduct(productInput:TypeProductInput) -> tuple[TypeProduct, int]:
         # check if product name already exists
         anotherProductData = validateUniqueField('name', productInput['name'])
         if anotherProductData:
-            return {
-                'message': 'Product Name Already Exists'
-            }, 409
+            abort(409, 'Product Name Already Exists')
 
         # validate vendor data with BE
         vendorData = vendorController.findVendorById(productInput['vendorId'])[0]['data']
@@ -103,24 +106,20 @@ def insertProduct(productInput:TypeProductInput) -> tuple[TypeProduct, int]:
         error_message = e.details.get('errmsg', str(e))
         abort(422, error_message)
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
 @verifyRole(['inventory'])
 def updateProduct(productId:str, productInput:TypeProductInput) -> tuple[TypeProduct, int]:
     try:
         # check if product data exists
-        productData = validateUniqueField('_id', ObjectId(productId))
-        if not productData:
-            return {
-                'message': 'Product Data Not Found'
-            }, 404
+        findProductById(productId)
 
         # check if another product name already exists
         anotherProductData = validateUniqueField('name', productInput['name'], productId)
         if anotherProductData:
-            return {
-                'message': 'Product Name Already Exists'
-            }, 409
+            abort(409, 'Product Name Already Exists')
         
         # validate vendor data with BE
         vendorData = vendorController.findVendorById(productInput['vendorId'])[0]['data']
@@ -144,19 +143,16 @@ def updateProduct(productId:str, productInput:TypeProductInput) -> tuple[TypePro
         errorMessage = e.details.get('errmsg', str(e))
         abort(422, errorMessage)
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
+@verifyRole(['inventory'])
 def removeProduct(productId:str)->tuple[None, int]:
-    # check if product data exists
     try:
-        productData = validateUniqueField('_id', ObjectId(productId))
-    except InvalidId:
-        abort(422, 'Invalid Vendor ID')
-    if not productData:
-        abort(404, 'Vendor Data Not Found')
+        # check if product data exists
+        findProductById(productId)
     
-    # remove product data
-    try:
         productCollection.update_one({
             '_id' : ObjectId(productId)
         }, {
@@ -164,7 +160,11 @@ def removeProduct(productId:str)->tuple[None, int]:
                 'activeStatus': False
             }
         })
+    except InvalidId:
+        abort(422, 'Invalid Vendor ID')
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         abort(500, str(e))
 
     return None, 204
